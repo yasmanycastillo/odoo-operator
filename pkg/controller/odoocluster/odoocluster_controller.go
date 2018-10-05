@@ -422,7 +422,9 @@ func (r *ReconcileOdooCluster) Reconcile(request reconcile.Request) (reconcile.R
 
 					out.Spec.Ports = svcPorts // Desired state
 					out.Spec.Selector = map[string]string{
-						"tier": fmt.Sprintf("%s", clusterv1beta1.ServerTier),
+						"tier":    strings.ToLower(fmt.Sprintf("%s", tier.Name)),
+						"track":   strings.ToLower(fmt.Sprintf("%s", track.Name)),
+						"cluster": strings.ToLower(fmt.Sprintf("%s", instance.Name)),
 					} // Desired state
 
 					if err := controllerutil.SetControllerReference(instance, out, r.scheme); err != nil {
@@ -452,7 +454,9 @@ func (r *ReconcileOdooCluster) Reconcile(request reconcile.Request) (reconcile.R
 
 					out.Spec.Ports = svcPorts // Desired state
 					out.Spec.Selector = map[string]string{
-						"tier": fmt.Sprintf("%s", clusterv1beta1.LongpollingTier),
+						"tier":    strings.ToLower(fmt.Sprintf("%s", tier.Name)),
+						"track":   strings.ToLower(fmt.Sprintf("%s", track.Name)),
+						"cluster": strings.ToLower(fmt.Sprintf("%s", instance.Name)),
 					} // Desired state
 
 					if err := controllerutil.SetControllerReference(instance, out, r.scheme); err != nil {
