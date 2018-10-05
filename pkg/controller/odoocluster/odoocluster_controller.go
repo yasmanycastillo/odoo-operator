@@ -627,13 +627,13 @@ func getContainerSpec(instance *clusterv1beta1.OdooCluster, track *clusterv1beta
 	}
 
 	// Set additional VolumeMounts dynamically
-	volumes := []corev1.VolumeMount{}
 	for _, s := range instance.Spec.Volumes {
-		volumes = append(volumes, corev1.VolumeMount{
-			Name:      strings.ToLower(fmt.Sprintf("%s-%s", instance.Name, s.Name)),
+		container.VolumeMounts = append(container.VolumeMounts, corev1.VolumeMount{
+			Name:      strings.ToLower(fmt.Sprintf("%s-%s-volume", instance.Name, s.Name)),
 			MountPath: strings.ToLower(fmt.Sprintf("%s%s", appMountPath, s.Name)) + "/",
 		})
 	}
+
 	switch tier.Name {
 	case clusterv1beta1.ServerTier:
 		setServerTierContainerSpec(&container, tier)
