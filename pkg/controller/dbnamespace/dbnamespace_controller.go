@@ -255,7 +255,7 @@ func deleteDBNamespace(spec *clusterv1beta1.DBNamespaceSpec) (err error) {
 		}
 
 		// Drop database
-		query := fmt.Sprintf("DROP DATABASE IF EXIXSTS '%s';", database)
+		query := fmt.Sprintf("DROP DATABASE IF EXIXSTS \"%s\";", database)
 		_, err = db.Exec(query)
 		if err != nil {
 			return err
