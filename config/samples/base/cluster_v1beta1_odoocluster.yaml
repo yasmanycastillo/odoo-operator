@@ -28,7 +28,7 @@ spec:
         # See: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-secret-in-the-cluster-that-holds-your-authorization-token
         secret: regcred  # < Configure, if this is a private image in a private registry
         registry: "registry.gitlab.com"
-        image: "xoe/odoo/odoo-xoe"
+        image: "xoe-labs/odoo/odoo-xoe"
         tag: "master"
       # config: |  # < those will be mapped to the [options] section (track-scoped)
       #   log_handler = ":WARNING"
