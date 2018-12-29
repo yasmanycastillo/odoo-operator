@@ -150,7 +150,6 @@ const (
 	// Environment Variables
 	envPGHOST       = "PGHOST"
 	envPGUSER       = "PGUSER"
-	envPGPASSFILE   = "PGPASSFILE"
 	envODOORC       = "ODOO_RC"
 	envODOOPASSFILE = "ODOO_PASSFILE"
 
@@ -160,7 +159,6 @@ const (
 	appSecretsPath = "/run/secrets/odoo/"
 
 	// ConfigMaps, Secrets & Volumes Keys
-	appPsqlSecretKey  = "pgpass"
 	appAdminSecretKey = "adminpwd"
 
 	// Basic Config
@@ -337,11 +335,9 @@ func (r *ReconcileOdooCluster) Reconcile(request reconcile.Request) (reconcile.R
 		// note that at this point _objDBNamespace_ and _existing_ point to the same struct
 		out := existing.(*corev1.Secret)
 
-		secPsqlBuf := newPsqlSecretWithParams(&instance.Spec.DBSpec)
 		secAdminBuf := newAdminSecretWithParams(instance.Spec.AdminPassword)
 
 		out.Data = map[string][]byte{
-			appPsqlSecretKey:  secPsqlBuf,
 			appAdminSecretKey: secAdminBuf,
 		} // Desired state
 
@@ -579,17 +575,6 @@ func getContainerSpec(instance *clusterv1beta1.OdooCluster, track *clusterv1beta
 	container := corev1.Container{
 		Name:  strings.ToLower(fmt.Sprintf("%s-%s-%s", instance.Name, track.Name, tier.Name)),
 		Image: strings.ToLower(fmt.Sprintf("%s/%s:%s", track.Image.Registry, track.Image.Image, track.Image.Tag)),
-		Lifecycle: &corev1.Lifecycle{
-			PostStart: &corev1.Handler{
-				Exec: &corev1.ExecAction{
-					// TODO: until proper fix of https://github.com/kubernetes/kubernetes/issues/2630
-					Command: []string{"sh", "-c",
-						"mkdir /run/secrets/patched && cat " + appSecretsPath + appPsqlSecretKey +
-							" > /run/secrets/patched/" + appPsqlSecretKey +
-							" && chmod 400 /run/secrets/patched/" + appPsqlSecretKey},
-				},
-			},
-		},
 		Env: []corev1.EnvVar{
 			{
 				Name:  envPGHOST,
@@ -598,11 +583,6 @@ func getContainerSpec(instance *clusterv1beta1.OdooCluster, track *clusterv1beta
 			{
 				Name:  envPGUSER,
 				Value: instance.Spec.DBSpec.User,
-			},
-			{
-				Name: envPGPASSFILE,
-				// TODO: until proper fix of https://github.com/kubernetes/kubernetes/issues/2630
-				Value: "/run/secrets/patched/" + appPsqlSecretKey,
 			},
 			{
 				Name:  envODOORC,
@@ -753,18 +733,6 @@ func setCronTierContainerSpec(container *corev1.Container, tier *clusterv1beta1.
 }
 
 // ---- Helper functions ---- //
-
-func newPsqlSecretWithParams(p *clusterv1beta1.DBNamespaceSpec) []byte {
-	var data string
-	buf := bytes.NewBufferString(data)
-	secret := fmt.Sprintf(odooPsqlSecretFmt,
-		p.Host,
-		p.Port,
-		p.User,
-		p.Password)
-	buf.WriteString(secret)
-	return []byte(buf.Bytes())
-}
 
 func newAdminSecretWithParams(pwd string) []byte {
 	var data string

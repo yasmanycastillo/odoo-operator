@@ -85,11 +85,6 @@ const odooCustomSection = `
 
 `
 
-const odooPsqlSecretFmt = `
-# hostname:port:database:username:password
-# If an entry needs to contain : or \, escape this character with \
-%s:%s:*:%s:%s
-`
 const odooAdminSecretFmt = `%s
 
 `
