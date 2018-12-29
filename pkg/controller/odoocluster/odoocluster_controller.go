@@ -150,6 +150,8 @@ const (
 	// Environment Variables
 	envPGHOST       = "PGHOST"
 	envPGUSER       = "PGUSER"
+	envPGPORT       = "PGPORT"
+	envPGPASSWORD   = "PGPASSWORD"
 	envODOORC       = "ODOO_RC"
 	envODOOPASSFILE = "ODOO_PASSFILE"
 
@@ -295,14 +297,12 @@ func (r *ReconcileOdooCluster) Reconcile(request reconcile.Request) (reconcile.R
 
 			cfgDefaultData := newDefaultConfig()
 			cfgOptionsData := newOptionsConfig(instance.Spec.Config, track.Config)
-			cfgIntegratorData := newIntegratorConfig(instance.Spec.IntegratorConfig, track.IntegratorConfig)
 			cfgCustomData := newCustomConfig(instance.Spec.CustomConfig, track.CustomConfig)
 
 			out.Data = map[string]string{
-				"01-DEFAULT":    cfgDefaultData,
-				"02-options":    cfgOptionsData,
-				"03-integrator": cfgIntegratorData,
-				"04-custom":     cfgCustomData,
+				"01-DEFAULT": cfgDefaultData,
+				"02-options": cfgOptionsData,
+				"03-custom":  cfgCustomData,
 			} // Desired state
 
 			if err := controllerutil.SetControllerReference(instance, out, r.scheme); err != nil {
@@ -585,6 +585,14 @@ func getContainerSpec(instance *clusterv1beta1.OdooCluster, track *clusterv1beta
 				Value: instance.Spec.DBSpec.User,
 			},
 			{
+				Name:  envPGPORT,
+				Value: instance.Spec.DBSpec.Port,
+			},
+			{
+				Name:  envPGPASSWORD,
+				Value: instance.Spec.DBSpec.Password,
+			},
+			{
 				Name:  envODOORC,
 				Value: appConfigsPath,
 			},
@@ -780,31 +788,6 @@ func newOptionsConfig(clusterOverrides *string, trackOverrides *string) string {
 	section := fmt.Sprintf(odooOptionsSection,
 		strings.ToLower(fmt.Sprintf("%s%s", appMountPath, clusterv1beta1.PVCNameData))+"/",
 		strings.ToLower(fmt.Sprintf("%s%s", appMountPath, clusterv1beta1.PVCNameBackup))+"/",
-		cO, tO)
-	buf.WriteString(section)
-	return buf.String()
-}
-
-func newIntegratorConfig(clusterOverrides *string, trackOverrides *string) string {
-	var s string
-	buf := bytes.NewBufferString(s)
-
-	var cO string
-	var tO string
-
-	if clusterOverrides != nil {
-		cO = *clusterOverrides
-	} else {
-		cO = ""
-	}
-
-	if trackOverrides != nil {
-		tO = *trackOverrides
-	} else {
-		tO = ""
-	}
-
-	section := fmt.Sprintf(odooIntegratorSection,
 		cO, tO)
 	buf.WriteString(section)
 	return buf.String()

@@ -57,8 +57,6 @@ spec:
               - password
               - dbAdmin
               type: object
-            integratorConfig:
-              type: string
             nodeSelector:
               type: object
             resourceQuotaSpec:
@@ -104,8 +102,6 @@ spec:
                     - image
                     - tag
                     type: object
-                  integratorConfig:
-                    type: string
                   name:
                     type: string
                 required:

@@ -50,8 +50,6 @@ type OdooClusterSpec struct {
 	// +optional
 	Config *string `json:"config,omitempty"`
 	// +optional
-	IntegratorConfig *string `json:"integratorConfig,omitempty"`
-	// +optional
 	CustomConfig *string `json:"customConfig,omitempty"`
 	// +optional
 	NodeSelector *v1.NodeSelector `json:"nodeSelector,omitempty"`
@@ -70,8 +68,6 @@ type TrackSpec struct {
 	Image ImageSpec `json:"image"`
 	// +optional
 	Config *string `json:"config,omitempty"`
-	// +optional
-	IntegratorConfig *string `json:"integratorConfig,omitempty"`
 	// +optional
 	CustomConfig *string `json:"customConfig,omitempty"`
 }

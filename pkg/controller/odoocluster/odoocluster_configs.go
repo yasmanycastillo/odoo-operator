@@ -63,18 +63,6 @@ backupfolder = %s
 %s
 `
 
-const odooIntegratorSection = `
-
-[integrator]
-
-# Cluster scoped overrides, if defined:
-%s
-
-# Track scoped overrides, if defined:
-%s
-
-`
-
 const odooCustomSection = `
 
 # Cluster scoped custom sections, if defined:
