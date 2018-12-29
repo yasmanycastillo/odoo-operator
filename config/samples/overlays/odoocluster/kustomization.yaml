@@ -20,6 +20,7 @@ namePrefix: odoo-operator-
 # markers ("---").
 resources:
 - namespace.yaml
+- secret.yaml
 - ../../base/ingress.yaml
 - ../../base/pvc-data.yaml
 - ../../base/pvc-backup.yaml

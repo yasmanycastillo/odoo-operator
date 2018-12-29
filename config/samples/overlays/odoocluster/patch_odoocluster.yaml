@@ -23,7 +23,7 @@ spec:
       image:
         # Create registry credentials
         # See: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-secret-in-the-cluster-that-holds-your-authorization-token
-        secret: regcred  # < Configure, if this is a private image in a private registry
+        secret: odoo-operator-regcred  # < Configure, if this is a private image in a private registry
         registry: "registry.gitlab.com"
         image: "xoe/odoo/odoo-xoe"
         tag: "master"
