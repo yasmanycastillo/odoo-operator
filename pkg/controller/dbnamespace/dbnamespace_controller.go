@@ -253,9 +253,19 @@ func deleteDBNamespace(spec *clusterv1beta1.DBNamespaceSpec) (err error) {
 		if err != nil {
 			return err
 		}
+		// Drop database connections
+		query := fmt.Sprintf(`
+			SELECT pg_terminate_backend(pg_stat_activity.pid)
+			FROM pg_stat_activity
+			WHERE pg_stat_activity.datname = '%s'
+  			AND pid <> pg_backend_pid();`, database)
+		_, err = db.Exec(query)
+		if err != nil {
+			return err
+		}
 
 		// Drop database
-		query := fmt.Sprintf("DROP DATABASE IF EXISTS \"%s\";", database)
+		query = fmt.Sprintf("DROP DATABASE IF EXISTS \"%s\";", database)
 		_, err = db.Exec(query)
 		if err != nil {
 			return err
