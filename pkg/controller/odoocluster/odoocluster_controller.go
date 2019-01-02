@@ -501,16 +501,28 @@ func setDeploymentSpec(
 	}
 
 	// Second, setup the Deployment Template
+	setPodTemplateSpec(&out.Spec.Template, instance, track)
+	out.Spec.Template.Labels["tier"] = strings.ToLower(fmt.Sprintf("%s", tier.Name))
 
+	// Third, set per-tier spec on container
+	for _, container := range out.Spec.Template.Spec.Containers {
+		container.Name = strings.ToLower(fmt.Sprintf("%s-%s", container.Name, tier.Name))
+		setContainerTierSpec(&container, tier)
+	}
+
+}
+
+func setPodTemplateSpec(
+	template *corev1.PodTemplateSpec, instance *clusterv1beta1.OdooCluster,
+	track *clusterv1beta1.TrackSpec) {
 	// Set Template Labels (to match deployment labels)
-	out.Spec.Template.Labels = map[string]string{
+	template.Labels = map[string]string{
 		"cluster": strings.ToLower(instance.Name),
-		"tier":    strings.ToLower(fmt.Sprintf("%s", tier.Name)),
 		"track":   strings.ToLower(track.Name),
 	}
 
 	// Set Template Spec
-	out.Spec.Template.Spec = corev1.PodSpec{
+	template.Spec = corev1.PodSpec{
 		// Set Template Volumes
 		Volumes: []corev1.Volume{
 			{
@@ -549,7 +561,7 @@ func setDeploymentSpec(
 		},
 	}
 	// Set containers
-	out.Spec.Template.Spec.Containers = getContainerSpec(instance, track, tier)
+	template.Spec.Containers = getContainerSpec(instance, track)
 
 	// Set additional volumes dynamically
 	for _, s := range instance.Spec.Volumes {
@@ -563,17 +575,17 @@ func setDeploymentSpec(
 				},
 			},
 		}
-		out.Spec.Template.Spec.Volumes = append(out.Spec.Template.Spec.Volumes, vol)
+		template.Spec.Volumes = append(template.Spec.Volumes, vol)
 
 	}
 }
 
-func getContainerSpec(instance *clusterv1beta1.OdooCluster, track *clusterv1beta1.TrackSpec, tier *clusterv1beta1.TierSpec) []corev1.Container {
+func getContainerSpec(instance *clusterv1beta1.OdooCluster, track *clusterv1beta1.TrackSpec) []corev1.Container {
 
 	containers := []corev1.Container{}
 
 	container := corev1.Container{
-		Name:  strings.ToLower(fmt.Sprintf("%s-%s-%s", instance.Name, track.Name, tier.Name)),
+		Name:  strings.ToLower(fmt.Sprintf("%s-%s", instance.Name, track.Name)),
 		Image: strings.ToLower(fmt.Sprintf("%s/%s:%s", track.Image.Registry, track.Image.Image, track.Image.Tag)),
 		Env: []corev1.EnvVar{
 			{
@@ -625,17 +637,20 @@ func getContainerSpec(instance *clusterv1beta1.OdooCluster, track *clusterv1beta
 			MountPath: strings.ToLower(fmt.Sprintf("%s%s", appMountPath, s.Name)) + "/",
 		})
 	}
-
-	switch tier.Name {
-	case clusterv1beta1.ServerTier:
-		setServerTierContainerSpec(&container, tier)
-	case clusterv1beta1.LongpollingTier:
-		setLonpgollingTierContainerSpec(&container, tier)
-	case clusterv1beta1.CronTier:
-		setCronTierContainerSpec(&container, tier)
-	}
 	containers = append(containers, container)
 	return containers
+
+}
+
+func setContainerTierSpec(container *corev1.Container, tier *clusterv1beta1.TierSpec) {
+	switch tier.Name {
+	case clusterv1beta1.ServerTier:
+		setServerTierContainerSpec(container, tier)
+	case clusterv1beta1.LongpollingTier:
+		setLonpgollingTierContainerSpec(container, tier)
+	case clusterv1beta1.CronTier:
+		setCronTierContainerSpec(container, tier)
+	}
 
 }
 
