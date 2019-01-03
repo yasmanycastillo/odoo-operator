@@ -32,16 +32,24 @@ package odooinstance
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"reflect"
+	"strings"
 
+	"github.com/xoe-labs/odoo-operator/pkg/finalizer"
+
+	clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
 	instancev1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/instance/v1beta1"
+	clustercontroller "github.com/xoe-labs/odoo-operator/pkg/controller/odoocluster/odoocluster_controller"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -84,18 +92,23 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// TODO(user): Modify this to be the types you create
 	// Uncomment watch a Deployment created by OdooInstance - change this for objects you create
-	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &instancev1beta1.OdooInstance{},
-	})
-	if err != nil {
-		return err
-	}
+	// err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
+	// 	IsController: true,
+	// 	OwnerType:    &instancev1beta1.OdooInstance{},
+	// })
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
 
 var _ reconcile.Reconciler = &ReconcileOdooInstance{}
+
+const (
+	// FinalizerKey ...
+	FinalizerKey = "cleanup.odooinstance.odoo.io"
+)
 
 // ReconcileOdooInstance reconciles a OdooInstance object
 type ReconcileOdooInstance struct {
@@ -105,12 +118,11 @@ type ReconcileOdooInstance struct {
 
 // Reconcile reads that state of the cluster for a OdooInstance object and makes changes based on the state read
 // and what is in the OdooInstance.Spec
-// TODO(user): Modify this Reconcile function to implement your Controller logic.  The scaffolding writes
-// a Deployment as an example
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
-// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=instance.odoo.io,resources=odooinstances,verbs=get;list;watch;create;update;patch;delete
 func (r *ReconcileOdooInstance) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+
 	// Fetch the OdooInstance instance
 	instance := &instancev1beta1.OdooInstance{}
 	err := r.Get(context.TODO(), request.NamespacedName, instance)
@@ -124,53 +136,167 @@ func (r *ReconcileOdooInstance) Reconcile(request reconcile.Request) (reconcile.
 		return reconcile.Result{}, err
 	}
 
-	// TODO(user): Change this to be the object type created by your controller
-	// Define the desired Deployment object
-	deploy := &appsv1.Deployment{
+	// Fetch the OdooCluster instance, error if not found
+	clusterinstance := &clusterv1beta1.OdooCluster{}
+	err = r.Get(context.TODO(), request.NamespacedName, clusterinstance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			log.Printf("%s/%s Operation: %s. (Controller: OdooInstance) Error: No OdooCluster found in this namespace\n", instance.Namespace, instance.Name, "validate")
+			return reconcile.Result{}, err
+		}
+		// Error reading the object - requeue the request.
+		return reconcile.Result{}, err
+	}
+	var parentInstance *instancev1beta1.OdooInstance
+	// Recursively get parent instance, if set
+	if instance.Spec.ParentName != nil {
+		parentInstance := &instancev1beta1.OdooInstance{}
+		err := r.Get(context.TODO(), request.NamespacedName, parentInstance)
+		if err != nil {
+			if errors.IsNotFound(err) {
+				log.Printf("%s/%s Operation: %s. (Controller: OdooInstance) Error: No parent OdooInstance found for name %s\n", instance.Namespace, instance.Name, "validate", instance.Spec.ParentName)
+				return reconcile.Result{}, err
+			}
+			// Error reading the object - requeue the request.
+			return reconcile.Result{}, err
+		}
+	}
+	// Find the Track of the OdooCluster instance by it's name ...
+	foundTrack := false
+	var track clusterv1beta1.TrackSpec
+	for _, _track := range clusterinstance.Spec.Tracks {
+		if _track.Name == instance.Spec.TrackName {
+			track = _track
+			foundTrack = true
+		}
+	}
+	// ... or the one of it's parent OdooInstance
+	if foundTrack != true && instance.Spec.ParentName != nil {
+		for _, _track := range clusterinstance.Spec.Tracks {
+			if _track.Name == parentInstance.Spec.TrackName {
+				track = _track
+				foundTrack = true
+			}
+		}
+	}
+
+	// create | delete | update | copy
+	operation := "create"
+
+	// Check a parent name is set ("child" or "testing" instance)
+	if instance.Spec.ParentName != nil {
+		operation = "copy"
+	}
+
+	// Check if it's a deletion operation
+	if instance.GetDeletionTimestamp() != nil {
+		operation = "delete"
+	}
+
+	if foundTrack != true {
+		log.Printf("%s/%s Operation: %s. (Controller: OdooInstance) Error: no track with name %s exists\n", instance.Namespace, instance.Name, "validate", instance.Spec.TrackName)
+		return reconcile.Result{}, fmt.Errorf("instance controller: no track with name %s exists %s", instance.Spec.TrackName)
+	}
+
+	// Define the desired Job object
+	initializer := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      instance.Name + "-deployment",
+			Name:      strings.ToLower(fmt.Sprintf("%s-%s-initializer", clusterinstance.Name, instance.Name)),
 			Namespace: instance.Namespace,
 		},
-		Spec: appsv1.DeploymentSpec{
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{"deployment": instance.Name + "-deployment"},
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"deployment": instance.Name + "-deployment"}},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  "nginx",
-							Image: "nginx",
-						},
-					},
-				},
-			},
+		Spec: batchv1.JobSpec{
+			Completions:           func(a int32) *int32 { return &a }(1),
+			BackoffLimit:          func(a int32) *int32 { return &a }(1),
+			ActiveDeadlineSeconds: func(a int64) *int64 { return &a }(360),
+			Template:              corev1.PodTemplateSpec{},
 		},
 	}
-	if err := controllerutil.SetControllerReference(instance, deploy, r.scheme); err != nil {
+	clustercontroller.setPodTemplateSpec(&initializer.Spec.Template, clusterinstance, &track)
+	initializer.Spec.Template.Labels["host"] = strings.ToLower(fmt.Sprintf("%s", instance.Spec.HostName))
+	containerArgs := []string{"dodoo-initializer", "--new-database", strings.ToLower(fmt.Sprintf("%s", instance.Spec.HostName)), "--config", clustercontroller.appConfigsPath}
+	if instance.Spec.Modules != nil {
+		containerArgs = append(containerArgs, "--modules", strings.Join(instance.Spec.Modules, ","))
+	}
+	if instance.Spec.Demo != nil {
+		containerArgs = append(containerArgs, "--demo")
+	} else {
+		containerArgs = append(containerArgs, "--no-demo")
+	}
+	for _, container := range initializer.Spec.Template.Spec.Containers {
+		container.Name = strings.ToLower(fmt.Sprintf("%s-%s-initializer", container.Name, instance.Name))
+		container.Args = containerArgs
+		container.Ports = []corev1.ContainerPort{}
+	}
+
+	if err := controllerutil.SetControllerReference(instance, initializer, r.scheme); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	// TODO(user): Change this for the object type created by your controller
-	// Check if the Deployment already exists
-	found := &appsv1.Deployment{}
-	err = r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+	// Check if the Job already exists
+	// Cave: Job existance signals instance existence
+	found := &batchv1.Job{}
+	err = r.Get(context.TODO(), types.NamespacedName{Name: initializer.Name, Namespace: initializer.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		log.Printf("Creating Deployment %s/%s\n", deploy.Namespace, deploy.Name)
-		err = r.Create(context.TODO(), deploy)
+		log.Printf("Creating OdooInstance %s/%s\n", instance.Namespace, instance.Name)
+		err = r.Create(context.TODO(), initializer)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
+		log.Printf("%s/%s setting finalizer: %s\n", instance.Namespace, instance.Name, FinalizerKey)
+		_, err = finalizers.AddFinalizers(instance, sets.NewString(FinalizerKey))
 	} else if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	// TODO(user): Change this for the object type created by your controller
+	// Check if finalizers are set
+	hasFinalizer, err := finalizers.HasFinalizer(instance, FinalizerKey)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// Marked for deletion: tear down!
+	if instance.GetDeletionTimestamp() != nil {
+		operation = "delete"
+		if hasFinalizer { // Define the desired Job object
+			dropper := &batchv1.Job{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      strings.ToLower(fmt.Sprintf("%s-%s-dropper", clusterinstance.Name, instance.Name)),
+					Namespace: instance.Namespace,
+				},
+				Spec: batchv1.JobSpec{
+					Completions:           func(a int32) *int32 { return &a }(1),
+					BackoffLimit:          func(a int32) *int32 { return &a }(1),
+					ActiveDeadlineSeconds: func(a int64) *int64 { return &a }(360),
+					Template:              corev1.PodTemplateSpec{},
+				},
+			}
+			clustercontroller.setPodTemplateSpec(&dropper.Spec.Template, clusterinstance, &track)
+			dropper.Spec.Template.Labels["host"] = strings.ToLower(fmt.Sprintf("%s", instance.Spec.HostName))
+			containerArgs := []string{"dodoo-dropper", "--database", strings.ToLower(fmt.Sprintf("%s", instance.Spec.HostName)), "--config", clustercontroller.appConfigsPath, "--if-exists"}
+			for _, container := range dropper.Spec.Template.Spec.Containers {
+				container.Name = strings.ToLower(fmt.Sprintf("%s-%s-dropper", container.Name, instance.Name))
+				container.Args = containerArgs
+				container.Ports = []corev1.ContainerPort{}
+			}
+			if err := controllerutil.SetControllerReference(instance, dropper, r.scheme); err != nil {
+				return reconcile.Result{}, err
+			}
+			log.Printf("Removing OdooInstance %s/%s\n", instance.Namespace, instance.Name)
+			err = r.Create(context.TODO(), dropper)
+			if err != nil {
+				return reconcile.Result{}, err
+			}
+			log.Printf("%s/%s removing finalizer: %s\n", instance.Namespace, instance.Name, FinalizerKey)
+			finalizers.RemoveFinalizers(instance, sets.NewString(FinalizerKey))
+		}
+		log.Printf("%s/%s reconciled. Operation: %s. (Controller: OdooInstance)\n", instance.Namespace, instance.Name, operation)
+		return reconcile.Result{}, nil
+	}
+
 	// Update the found object and write the result back if there are any changes
-	if !reflect.DeepEqual(deploy.Spec, found.Spec) {
-		found.Spec = deploy.Spec
-		log.Printf("Updating Deployment %s/%s\n", deploy.Namespace, deploy.Name)
+	if !reflect.DeepEqual(initializer.Spec, found.Spec) {
+		found.Spec = initializer.Spec
+		log.Printf("Updating OdooInstance %s/%s\n", initializer.Namespace, initializer.Name)
 		err = r.Update(context.TODO(), found)
 		if err != nil {
 			return reconcile.Result{}, err

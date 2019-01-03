@@ -40,12 +40,22 @@ import (
 
 // OdooInstanceSpec defines the desired state of OdooInstance
 type OdooInstanceSpec struct {
-	OdooCluster string `json:"odooCluster"`
-	// DbName         string      `json:dbName`
-	HostName       string `json:"hostName"`
-	DbSeedCfgMap   string `json:"dbSeedCfgMap"`
-	DbQuota        int32  `json:"dbQuota"`
-	FilestoreQuota int32  `json:"fsQuota"`
+	// The host name of this instance (mutable)
+	HostName string `json:"hostName"`
+	// The track name of this instance (immutable)
+	TrackName string `json:"trackName"`
+	// +optional
+	ParentName *string `json:"parent"`
+	// +optional
+	Modules []string `json:"modules"`
+	// +optional
+	Demo *bool `json:"demo"`
+	// +optional
+	DbSeedCfgMap string `json:"dbSeedCfgMap"`
+	// +optional
+	DbQuota int32 `json:"dbQuota"`
+	// +optional
+	FilestoreQuota int32 `json:"fsQuota"`
 }
 
 // OdooInstanceStatus defines the observed state of OdooInstance
