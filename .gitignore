@@ -23,3 +23,6 @@ zz_generated.*
 *.swp
 *.swo
 *~
+
+/config/samples/overlays/odoocluster/secret.yaml
+

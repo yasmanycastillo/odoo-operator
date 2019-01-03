@@ -710,7 +710,11 @@ func setLonpgollingTierContainerSpec(container *corev1.Container, tier *clusterv
 		maxConn = defaultLongpollingTierMaxConn
 	}
 	container.Args = []string{"gevent", "--config", appConfigsPath, "--db_maxconn=" + maxConn}
-	container.Ports = []corev1.ContainerPort{}
+	container.Ports = []corev1.ContainerPort{{
+		Name:          longpollingPortName,
+		ContainerPort: int32(longpollingPort),
+		Protocol:      corev1.ProtocolTCP,
+	}}
 
 	container.LivenessProbe = &corev1.Probe{
 		Handler: corev1.Handler{
@@ -748,11 +752,7 @@ func setLonpgollingTierContainerSpec(container *corev1.Container, tier *clusterv
 
 func setCronTierContainerSpec(container *corev1.Container, tier *clusterv1beta1.TierSpec) {
 	container.Args = []string{"--config", appConfigsPath, "--db_maxconn=1", "--workers=0", "--max-cron-threads=1", "--no-xmlrpc"}
-	container.Ports = []corev1.ContainerPort{{
-		Name:          longpollingPortName,
-		ContainerPort: int32(longpollingPort),
-		Protocol:      corev1.ProtocolTCP,
-	}}
+	container.Ports = []corev1.ContainerPort{}
 }
 
 // ---- Helper functions ---- //
