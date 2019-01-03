@@ -37,6 +37,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/Ridecell/ridecell-operator/pkg/components"
 	"github.com/xoe-labs/odoo-operator/pkg/finalizer"
 
 	clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
@@ -151,7 +152,7 @@ func (r *ReconcileOdooInstance) Reconcile(request reconcile.Request) (reconcile.
 	// Recursively get parent instance, if set
 	if instance.Spec.ParentName != nil {
 		parentInstance := &instancev1beta1.OdooInstance{}
-		err := r.Get(context.TODO(), request.NamespacedName, parentInstance)
+		err := r.Get(context.TODO(), types.NamespacedName{Name: &instance.Spec.ParentName, Namespace: instance.Namespace}, parentInstance)
 		if err != nil {
 			if errors.IsNotFound(err) {
 				log.Printf("%s/%s Operation: %s. (Controller: OdooInstance) Error: No parent OdooInstance found for name %s\n", instance.Namespace, instance.Name, "validate", instance.Spec.ParentName)
@@ -180,7 +181,7 @@ func (r *ReconcileOdooInstance) Reconcile(request reconcile.Request) (reconcile.
 		}
 	}
 
-	// create | delete | update | copy
+	// create | delete | update | copy | migrate
 	operation := "create"
 
 	// Check a parent name is set ("child" or "testing" instance)

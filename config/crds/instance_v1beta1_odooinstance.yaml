@@ -30,13 +30,22 @@ spec:
             fsQuota:
               format: int32
               type: integer
-            hostName:
+            hostname:
               type: string
-            odooCluster:
+            modules:
+              items:
+                type: string
+              type: array
+            parent:
+              type: string
+            version:
               type: string
           required:
-          - odooCluster
-          - hostName
+          - hostname
+          - version
+          - parent
+          - modules
+          - demo
           - dbSeedCfgMap
           - dbQuota
           - fsQuota

@@ -41,9 +41,9 @@ import (
 // OdooInstanceSpec defines the desired state of OdooInstance
 type OdooInstanceSpec struct {
 	// The host name of this instance (mutable)
-	HostName string `json:"hostName"`
-	// The track name of this instance (immutable)
-	TrackName string `json:"trackName"`
+	Hostname string `json:"hostname"`
+	// The version of this instance (immutable)
+	Version string `json:"version"`
 	// +optional
 	ParentName *string `json:"parent"`
 	// +optional
