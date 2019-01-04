@@ -27,6 +27,8 @@ spec:
               type: integer
             dbSeedCfgMap:
               type: string
+            demo:
+              type: boolean
             fsQuota:
               format: int32
               type: integer
@@ -43,6 +45,7 @@ spec:
           required:
           - hostname
           - version
+          - trackName
           - parent
           - modules
           - demo
