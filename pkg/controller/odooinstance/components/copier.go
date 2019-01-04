@@ -31,14 +31,22 @@
 package components
 
 import (
-	// "fmt"
+	"github.com/golang/glog"
 
 	"github.com/Ridecell/ridecell-operator/pkg/components"
 	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	// clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
 	instancev1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/instance/v1beta1"
+	odooinstanceutils "github.com/xoe-labs/odoo-operator/pkg/controller/odooinstance/utils"
 )
 
 type copierComponent struct {
@@ -55,17 +63,78 @@ func (_ *copierComponent) WatchTypes() []runtime.Object {
 	}
 }
 
-func (_ *copierComponent) IsReconcilable(_ *components.ComponentContext) bool {
+func (_ *copierComponent) IsReconcilable(ctx *components.ComponentContext) bool {
+	instance := ctx.Top.(*instancev1beta1.OdooInstance)
+	if instance.Spec.Parentname == nil {
+		// The initializer component is the one that should initialize a root instance
+		return false
+	}
+	if odooinstanceutils.GetOdooInstanceStatusCondition(instance.Status, instancev1beta1.OdooInstanceStatusConditionTypeCreated) != nil {
+		// The instance is already created (or creating)
+		return false
+	}
 	return true
 }
 
 func (comp *copierComponent) Reconcile(ctx *components.ComponentContext) (reconcile.Result, error) {
+	obj, err := ctx.GetTemplate(comp.templatePath, nil)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+	job := obj.(*batchv1.Job)
 	instance := ctx.Top.(*instancev1beta1.OdooInstance)
 
-	// Fill in defaults.
-	if instance.Spec.Hostname == "" {
-		instance.Spec.Hostname = instance.Name + ".xoe.cloud"
+	existing := &batchv1.Job{}
+	err = ctx.Get(ctx.Context, types.NamespacedName{Name: job.Name, Namespace: job.Namespace}, existing)
+	if err != nil && errors.IsNotFound(err) {
+		glog.Infof("[%s/%s] copier: Creating copier Job %s/%s\n", instance.Namespace, instance.Name, job.Namespace, job.Name)
+
+		// Setting the creating condition
+		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
+			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "CopyJobCreation",
+			"An copier job has been launched to copy and initialize this database instance.")
+		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
+
+		// Launching the job
+		err = controllerutil.SetControllerReference(instance, job, ctx.Scheme)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+		err = ctx.Create(ctx.Context, job)
+		if err != nil {
+			// If this fails, someone else might have started a copier job between the Get and here, so just try again.
+			return reconcile.Result{Requeue: true}, err
+		}
+		// Job is started, so we're done for now.
+		return reconcile.Result{}, nil
+	} else if err != nil {
+		// Some other real error, bail.
+		return reconcile.Result{}, err
 	}
 
+	// If we get this far, the job previously started at some point and might be done.
+	// Check if the job succeeded.
+	if existing.Status.Succeeded > 0 {
+		// Success! Update the corresponding OdooInstanceStatusCondition and delete the job.
+
+		glog.Infof("[%s/%s] copier: Copier Job succeeded, setting OdooInstanceStatusCondition \"Created\" to 'true'\n", instance.Namespace, instance.Name)
+		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
+			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionTrue, "CopyJobSuccess",
+			"The database instance has been sucessfully created by an copier job.")
+		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
+
+		glog.V(2).Infof("[%s/%s] copier: Deleting copier Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
+		err = ctx.Delete(ctx.Context, existing, client.PropagationPolicy(metav1.DeletePropagationBackground))
+		if err != nil {
+			return reconcile.Result{Requeue: true}, err
+		}
+	}
+
+	// ... Or if the job failed.
+	if existing.Status.Failed > 0 {
+		glog.Errorf("[%s/%s] copier: Copier Job failed, leaving job %s/%s for debugging purposes\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
+	}
+
+	// Job is still running, will get reconciled when it finishes.
 	return reconcile.Result{}, nil
 }
