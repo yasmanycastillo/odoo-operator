@@ -52,6 +52,7 @@ func (_ *defaultsComponent) WatchTypes() []runtime.Object {
 }
 
 func (_ *defaultsComponent) IsReconcilable(_ *components.ComponentContext) bool {
+	// Always "reconcile" (apply) Defaults as the first controller action
 	return true
 }
 

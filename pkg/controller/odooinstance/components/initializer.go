@@ -35,6 +35,7 @@ import (
 
 	"github.com/Ridecell/ridecell-operator/pkg/components"
 	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -45,6 +46,7 @@ import (
 
 	// clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
 	instancev1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/instance/v1beta1"
+	odooinstanceutils "github.com/xoe-labs/odoo-operator/pkg/controller/odooinstance/utils"
 )
 
 type initializerComponent struct {
@@ -61,7 +63,16 @@ func (comp *initializerComponent) WatchTypes() []runtime.Object {
 	}
 }
 
-func (_ *initializerComponent) IsReconcilable(_ *components.ComponentContext) bool {
+func (_ *initializerComponent) IsReconcilable(ctx *components.ComponentContext) bool {
+	instance := ctx.Top.(*instancev1beta1.OdooInstance)
+	if instance.Spec.Parentname != nil {
+		// The copier component is the one that should copy a parent instance
+		return false
+	}
+	if odooinstanceutils.GetOdooInstanceStatusCondition(instance.Status, instancev1beta1.OdooInstanceStatusConditionTypeCreated) != nil {
+		// The instance is already created (or creating)
+		return false
+	}
 	return true
 }
 
@@ -76,7 +87,15 @@ func (comp *initializerComponent) Reconcile(ctx *components.ComponentContext) (r
 	existing := &batchv1.Job{}
 	err = ctx.Get(ctx.Context, types.NamespacedName{Name: job.Name, Namespace: job.Namespace}, existing)
 	if err != nil && errors.IsNotFound(err) {
-		glog.Infof("Creating initializer Job %s/%s\n", job.Namespace, job.Name)
+		glog.Infof("[%s/%s] initializer: Creating initializer Job %s/%s\n", instance.Namespace, instance.Name, job.Namespace, job.Name)
+
+		// Setting the creating condition
+		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
+			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "InitJobCreation",
+			"An initializer job has been launched to create and initialize this database instance.")
+		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
+
+		// Launching the job
 		err = controllerutil.SetControllerReference(instance, job, ctx.Scheme)
 		if err != nil {
 			return reconcile.Result{}, err
@@ -94,22 +113,17 @@ func (comp *initializerComponent) Reconcile(ctx *components.ComponentContext) (r
 	}
 
 	// If we get this far, the job previously started at some point and might be done.
-	// First make sure we even care about this job, it only counts if it's for the version we want.
-	existingVersion, ok := existing.Labels["app.kubernetes.io/version"]
-	if !ok || existingVersion != instance.Spec.Version {
-		glog.Infof("[%s/%s] migrations: Found existing migration job with bad version %#v\n", instance.Namespace, instance.Name, existingVersion)
-		// This is from a bad (or broken if !ok) version, try to delete it and then run again.
-		err = ctx.Delete(ctx.Context, existing, client.PropagationPolicy(metav1.DeletePropagationBackground))
-		return reconcile.Result{Requeue: true}, err
-	}
-
 	// Check if the job succeeded.
 	if existing.Status.Succeeded > 0 {
-		// Success! Update the MigrateVersion (this will trigger a reconcile) and delete the job.
-		// glog.Infof("[%s/%s] migrations: Migration job succeeded, updating MigrateVersion from %s to %s\n", instance.Namespace, instance.Name, instance.Status.MigrateVersion, instance.Spec.Version)
-		// instance.Status.MigrateVersion = instance.Spec.Version
+		// Success! Update the corresponding OdooInstanceStatusCondition and delete the job.
 
-		glog.V(2).Infof("[%s/%s] Deleting migration Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
+		glog.Infof("[%s/%s] initializer: Initializer Job succeeded, setting OdooInstanceStatusCondition \"Created\" to 'true'\n", instance.Namespace, instance.Name)
+		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
+			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionTrue, "InitJobSuccess",
+			"The database instance has been sucessfully created by an initializer job.")
+		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
+
+		glog.V(2).Infof("[%s/%s] initializer: Deleting initializer Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
 		err = ctx.Delete(ctx.Context, existing, client.PropagationPolicy(metav1.DeletePropagationBackground))
 		if err != nil {
 			return reconcile.Result{Requeue: true}, err
@@ -118,8 +132,7 @@ func (comp *initializerComponent) Reconcile(ctx *components.ComponentContext) (r
 
 	// ... Or if the job failed.
 	if existing.Status.Failed > 0 {
-		// If it was an outdated job, we would have already deleted it, so this means it's a failed migration for the current version.
-		glog.Errorf("[%s/%s] Migration job failed, leaving job %s/%s for debugging purposes\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
+		glog.Errorf("[%s/%s] initializer: Initializer Job failed, leaving job %s/%s for debugging purposes\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
 	}
 
 	// Job is still running, will get reconciled when it finishes.

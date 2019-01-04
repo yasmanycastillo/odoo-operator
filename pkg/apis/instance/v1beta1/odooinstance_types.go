@@ -45,7 +45,7 @@ type OdooInstanceSpec struct {
 	// The version of this instance (immutable)
 	Version string `json:"version"`
 	// +optional
-	ParentName *string `json:"parent"`
+	Parentname *string `json:"parentname"`
 	// +optional
 	Modules []string `json:"modules"`
 	// +optional
@@ -95,14 +95,12 @@ type OdooInstanceStatusConditionType string
 const (
 	// OdooInstanceStatusConditionTypeCreated ...
 	OdooInstanceStatusConditionTypeCreated OdooInstanceStatusConditionType = "Created"
+	// OdooInstanceStatusConditionTypeMigrated ...
+	OdooInstanceStatusConditionTypeMigrated OdooInstanceStatusConditionType = "Migrated"
 	// OdooInstanceStatusConditionTypeReconciled ...
 	OdooInstanceStatusConditionTypeReconciled OdooInstanceStatusConditionType = "Reconciled"
-	// OdooInstanceStatusConditionTypeErrored ...
-	OdooInstanceStatusConditionTypeErrored OdooInstanceStatusConditionType = "Errored"
-	// OdooInstanceStatusConditionTypeSuspended ...
-	OdooInstanceStatusConditionTypeSuspended OdooInstanceStatusConditionType = "Suspended"
-	// OdooInstanceStatusConditionTypeMaintenance ...
-	OdooInstanceStatusConditionTypeMaintenance OdooInstanceStatusConditionType = "Maintenance"
+	// OdooInstanceStatusConditionTypeMaintaining ...
+	OdooInstanceStatusConditionTypeMaintaining OdooInstanceStatusConditionType = "Maintaining"
 )
 
 // +genclient
@@ -110,6 +108,7 @@ const (
 
 // OdooInstance is the Schema for the odooinstances API
 // +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type OdooInstance struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
