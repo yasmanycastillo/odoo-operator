@@ -11,6 +11,8 @@ spec:
     kind: OdooInstance
     plural: odooinstances
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       properties:
@@ -25,8 +27,6 @@ spec:
             dbQuota:
               format: int32
               type: integer
-            dbSeedCfgMap:
-              type: string
             demo:
               type: boolean
             fsQuota:
@@ -34,22 +34,23 @@ spec:
               type: integer
             hostname:
               type: string
-            modules:
+            initModules:
               items:
                 type: string
               type: array
-            parent:
+            initSQL:
+              type: string
+            parentname:
               type: string
             version:
               type: string
           required:
           - hostname
           - version
-          - trackName
-          - parent
-          - modules
+          - parentname
           - demo
-          - dbSeedCfgMap
+          - initModules
+          - initSQL
           - dbQuota
           - fsQuota
           type: object

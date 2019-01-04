@@ -47,13 +47,13 @@ type OdooInstanceSpec struct {
 	// +optional
 	Parentname *string `json:"parentname"`
 	// +optional
-	Modules []string `json:"modules"`
-	// +optional
 	Demo *bool `json:"demo"`
 	// +optional
-	DbSeedCfgMap string `json:"dbSeedCfgMap"`
+	InitModules []string `json:"initModules"`
 	// +optional
-	DbQuota int32 `json:"dbQuota"`
+	InitSQL string `json:"initSQL"`
+	// +optional
+	DBQuota int32 `json:"dbQuota"`
 	// +optional
 	FilestoreQuota int32 `json:"fsQuota"`
 }
