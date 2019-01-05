@@ -92,7 +92,7 @@ func (comp *initializerComponent) Reconcile(ctx *components.ComponentContext) (r
 		// Setting the creating condition
 		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
 			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "InitJobCreation",
-			"An initializer job has been launched to create and initialize this database instance.")
+			"An initializer Job has been launched to create and initialize this database instance.")
 		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
 
 		// Launching the job
@@ -120,7 +120,7 @@ func (comp *initializerComponent) Reconcile(ctx *components.ComponentContext) (r
 		glog.Infof("[%s/%s] initializer: Initializer Job succeeded, setting OdooInstanceStatusCondition \"Created\" to 'true'\n", instance.Namespace, instance.Name)
 		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
 			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionTrue, "InitJobSuccess",
-			"The database instance has been sucessfully created by an initializer job.")
+			"The database instance has been sucessfully created by an initializer Job.")
 		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
 
 		glog.V(2).Infof("[%s/%s] initializer: Deleting initializer Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)

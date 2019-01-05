@@ -105,7 +105,7 @@ func (comp *copierComponent) Reconcile(ctx *components.ComponentContext) (reconc
 		// Setting the creating condition
 		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
 			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "CopyJobCreation",
-			"An copier job has been launched to copy and initialize this database instance.")
+			"A copier Job has been launched to copy and initialize this database instance.")
 		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
 
 		// Launching the job
@@ -133,7 +133,7 @@ func (comp *copierComponent) Reconcile(ctx *components.ComponentContext) (reconc
 		glog.Infof("[%s/%s] copier: Copier Job succeeded, setting OdooInstanceStatusCondition \"Created\" to 'true'\n", instance.Namespace, instance.Name)
 		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
 			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionTrue, "CopyJobSuccess",
-			"The database instance has been sucessfully created by an copier job.")
+			"The database instance has been sucessfully created by a copier Job.")
 		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
 
 		glog.V(2).Infof("[%s/%s] copier: Deleting copier Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
