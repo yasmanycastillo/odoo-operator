@@ -77,12 +77,25 @@ func (_ *copierComponent) IsReconcilable(ctx *components.ComponentContext) bool 
 }
 
 func (comp *copierComponent) Reconcile(ctx *components.ComponentContext) (reconcile.Result, error) {
-	obj, err := ctx.GetTemplate(comp.templatePath, nil)
+	instance := ctx.Top.(*instancev1beta1.OdooInstance)
+	parentinstance := &instancev1beta1.OdooInstance{}
+
+	// Set up the extra data map for the template.
+	err := ctx.Get(ctx.Context, types.NamespacedName{Name: *instance.Spec.Parentname, Namespace: instance.Namespace}, parentinstance)
+	if err != nil && errors.IsNotFound(err) {
+		glog.Infof("[%s/%s] copier: Did not find parent OdooInstance %s/%s\n", instance.Namespace, instance.Name, instance.Namespace, instance.Spec.Parentname)
+		return reconcile.Result{}, err
+	} else if err != nil {
+		return reconcile.Result{}, err
+	}
+	extra := map[string]interface{}{}
+	extra["FromDatabase"] = string(parentinstance.Spec.Hostname)
+
+	obj, err := ctx.GetTemplate(comp.templatePath, extra)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 	job := obj.(*batchv1.Job)
-	instance := ctx.Top.(*instancev1beta1.OdooInstance)
 
 	existing := &batchv1.Job{}
 	err = ctx.Get(ctx.Context, types.NamespacedName{Name: job.Name, Namespace: job.Namespace}, existing)
