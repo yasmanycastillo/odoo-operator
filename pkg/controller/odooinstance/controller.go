@@ -52,6 +52,13 @@ func Add(mgr manager.Manager) error {
 		odooinstancecomponents.NewSyncMigrator("sync-migrator.yml.tpl"),
 		// odooinstancecomponents.NewAsynchMigrator("asynch-migrator.yml.tpl"),
 
+		// Remover acting upon finalizers of deleted instances
+		odooinstancecomponents.NewRemover(),
+
+		// Done on the cluster controller as owner of the ingress resource
+		// // L7 instance routing
+		// // Keep it at the end of this block to consume a consistent final state
+		// odooinstancecomponents.NewRouter("sync-migrator.yml.tpl"),
 	})
 	return err
 }
