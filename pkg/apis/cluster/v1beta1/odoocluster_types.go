@@ -35,22 +35,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // OdooClusterSpec defines the desired state of OdooCluster
 type OdooClusterSpec struct {
-	Tracks        []TrackSpec     `json:"tracks"`
-	Tiers         []TierSpec      `json:"tiers"`
-	Volumes       []Volume        `json:"volumes,omitempty"`
-	DBSpec        DBNamespaceSpec `json:"dbNamespaceSpec"`
-	AdminPassword string          `json:"adminPassword"`
+	Tracks          []OdooTrackSpec `json:"tracks"`
+	Tiers           []TierSpec      `json:"tiers"`
+	Volumes         []Volume        `json:"volumes,omitempty"`
+	DBSpec          DBNamespaceSpec `json:"dbNamespaceSpec"`
+	AdminPassword   string          `json:"adminPassword"`
+	ImageRepository string          `json:"imagerepo"`
+	// +optional
+	PullSecret string `json:"pullsecret"`
 	// +optional
 	ResourceQuotaSpec *v1.ResourceQuotaSpec `json:"resourceQuotaSpec,omitempty"`
 	// +optional
 	Config *string `json:"config,omitempty"`
-	// +optional
-	CustomConfig *string `json:"customConfig,omitempty"`
 	// +optional
 	NodeSelector *v1.NodeSelector `json:"nodeSelector,omitempty"`
 
@@ -62,14 +60,14 @@ type OdooClusterSpec struct {
 	// OpenProject bool `json:"openProject"`
 }
 
-// TrackSpec defines the desired state of a Track
-type TrackSpec struct {
-	Name  string    `json:"name"`
-	Image ImageSpec `json:"image"`
+// OdooImageSpec defines an Image and (optionally) it's registry credentials
+type OdooImageSpec struct {
+	Repository string            `json:"repository"`
+	Image      string            `json:"image"`
+	Trackname  OdooTracknameType `json:"track"`
+	Version    string            `json:"version"`
 	// +optional
-	Config *string `json:"config,omitempty"`
-	// +optional
-	CustomConfig *string `json:"customConfig,omitempty"`
+	Secret string `json:"secret,omitempty"`
 }
 
 // TierSpec defines the desired state of a Tier
@@ -112,14 +110,6 @@ const (
 	// LongpollingTier ...
 	LongpollingTier Tier = "LongPolling"
 )
-
-// ImageSpec defines an Image and (optionally) it's registry credentials
-type ImageSpec struct {
-	Registry string `json:"registry"`
-	Image    string `json:"image"`
-	Tag      string `json:"tag"`
-	Secret   string `json:"secret,omitempty"`
-}
 
 // OdooClusterStatus defines the observed state of OdooCluster
 type OdooClusterStatus struct {
