@@ -40,7 +40,7 @@ type OdooVersionSpec struct {
 	Version string `json:"name"`
 	Bugfix  bool   `json:"bugfix"`
 	// +optional
-	Config *string `json:"config,omitempty"`
+	Config map[string]ConfigValue `json:"config,omitempty"`
 }
 
 // OdooVersionStatus defines the observed state of OdooVersion

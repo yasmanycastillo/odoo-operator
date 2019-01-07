@@ -39,7 +39,7 @@ type OdooTrackSpec struct {
 	Name         OdooTracknameType `json:"name"`
 	StartVersion OdooVersionSpec   `json:"startversion"`
 	// +optional
-	Config *string `json:"config,omitempty"`
+	Config map[string]ConfigValue `json:"config,omitempty"`
 }
 
 // OdooTracknameType can be one of the supported tracks
