@@ -16,6 +16,7 @@ package v1beta1
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 // Intercept JSON decoding and try to deal with "simple" values before giving
@@ -46,8 +47,9 @@ func (v *ConfigValue) UnmarshalJSON(data []byte) error {
 	sectionVal, ok := tmp.(map[string]interface{})
 	if ok {
 		for k, tmp := range sectionVal {
-			v.Section[k] = &ConfigValue{}
-			v.Section[k].unmarshalValue(tmp)
+			val := &ConfigValue{}
+			val.unmarshalValue(tmp)
+			v.Section[k] = *val
 		}
 
 	}
@@ -77,4 +79,20 @@ func (v *ConfigValue) unmarshalValue(tmp interface{}) bool {
 		return true
 	}
 	return false
+}
+
+// Run the reverse, convert the union back into an interface{} for use in JSON
+// or INI encoding when building the config file.
+func (v *ConfigValue) ToString() string {
+	if v.Bool != nil {
+		return fmt.Sprintf("%v", *v.Bool)
+	} else if v.Int != nil {
+		return fmt.Sprintf("%v", *v.Int)
+	} else if v.Float != nil {
+		return fmt.Sprintf("%v", *v.Float)
+	} else if v.String != nil {
+		return fmt.Sprintf("%v", *v.String)
+	} else {
+		panic("Unknown ConfigValue type")
+	}
 }

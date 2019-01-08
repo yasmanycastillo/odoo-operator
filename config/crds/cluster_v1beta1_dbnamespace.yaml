@@ -24,27 +24,27 @@ spec:
           properties:
             dbAdmin:
               properties:
+                host:
+                  type: string
                 password:
+                  type: string
+                port:
                   type: string
                 user:
                   type: string
               required:
+              - host
+              - port
               - user
               - password
               type: object
-            host:
-              type: string
             password:
-              type: string
-            port:
               type: string
             user:
               type: string
             userQuota:
               type: object
           required:
-          - host
-          - port
           - user
           - password
           - dbAdmin

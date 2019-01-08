@@ -27,157 +27,53 @@
  * Operator with a closed source product.
  *
  */
-
 package odooversion
 
 import (
-	"context"
-	"reflect"
-
 	clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/blaggacao/ridecell-operator/pkg/components"
+	odooversioncomponents "github.com/xoe-labs/odoo-operator/pkg/controller/odooversion/components"
 )
-
-var log = logf.Log.WithName("controller")
-
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
 
 // Add creates a new OdooVersion Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
-}
-
-// newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileOdooVersion{Client: mgr.GetClient(), scheme: mgr.GetScheme()}
-}
-
-// add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	// Create a new controller
-	c, err := controller.New("odooversion-controller", mgr, controller.Options{Reconciler: r})
-	if err != nil {
-		return err
-	}
-
-	// Watch for changes to OdooVersion
-	err = c.Watch(&source.Kind{Type: &clusterv1beta1.OdooVersion{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
-
-	// TODO(user): Modify this to be the types you create
-	// Uncomment watch a Deployment created by OdooVersion - change this for objects you create
-	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &clusterv1beta1.OdooVersion{},
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var _ reconcile.Reconciler = &ReconcileOdooVersion{}
-
-// ReconcileOdooVersion reconciles a OdooVersion object
-type ReconcileOdooVersion struct {
-	client.Client
-	scheme *runtime.Scheme
-}
-
-// Reconcile reads that state of the cluster for a OdooVersion object and makes changes based on the state read
-// and what is in the OdooVersion.Spec
-// TODO(user): Modify this Reconcile function to implement your Controller logic.  The scaffolding writes
-// a Deployment as an example
-// Automatically generate RBAC rules to allow the Controller to read and write Deployments
+//
+// +kubebuilder:rbac:groups=,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=,resources=services/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=,resources=configmaps/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=cluster.odoo.io,resources=odooversions,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cluster.odoo.io,resources=odooversions/status,verbs=get;update;patch
-func (r *ReconcileOdooVersion) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	// Fetch the OdooVersion instance
-	instance := &clusterv1beta1.OdooVersion{}
-	err := r.Get(context.TODO(), request.NamespacedName, instance)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// Object not found, return.  Created objects are automatically garbage collected.
-			// For additional cleanup logic use finalizers.
-			return reconcile.Result{}, nil
-		}
-		// Error reading the object - requeue the request.
-		return reconcile.Result{}, err
-	}
+func Add(mgr manager.Manager) error {
+	_, err := components.NewReconciler("odooversion-controller", mgr, &clusterv1beta1.OdooVersion{}, Templates, []components.Component{
+		// Set default values.
+		// odooversioncomponents.NewDefaults(),
 
-	// TODO(user): Change this to be the object type created by your controller
-	// Define the desired Deployment object
-	deploy := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      instance.Name + "-deployment",
-			Namespace: instance.Namespace,
-		},
-		Spec: appsv1.DeploymentSpec{
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{"deployment": instance.Name + "-deployment"},
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"deployment": instance.Name + "-deployment"}},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  "nginx",
-							Image: "nginx",
-						},
-					},
-				},
-			},
-		},
-	}
-	if err := controllerutil.SetControllerReference(instance, deploy, r.scheme); err != nil {
-		return reconcile.Result{}, err
-	}
+		// Set Top-level components
+		odooversioncomponents.NewConfigMap("configmap.yml.tpl"),
 
-	// TODO(user): Change this for the object type created by your controller
-	// Check if the Deployment already exists
-	found := &appsv1.Deployment{}
-	err = r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
-	if err != nil && errors.IsNotFound(err) {
-		log.Info("Creating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
-		err = r.Create(context.TODO(), deploy)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-	} else if err != nil {
-		return reconcile.Result{}, err
-	}
+		// Web Server components (app.kubernetes.io/component = web)
+		odooversioncomponents.NewDeployment("web/deployment.yml.tpl"),
+		// odooversioncomponents.NewService("web/service.yml.tpl"),
 
-	// TODO(user): Change this for the object type created by your controller
-	// Update the found object and write the result back if there are any changes
-	if !reflect.DeepEqual(deploy.Spec, found.Spec) {
-		found.Spec = deploy.Spec
-		log.Info("Updating Deployment", "namespace", deploy.Namespace, "name", deploy.Name)
-		err = r.Update(context.TODO(), found)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-	}
-	return reconcile.Result{}, nil
+		// Longpolling components (app.kubernetes.io/component = longpolling)
+		odooversioncomponents.NewDeployment("longpolling/deployment.yml.tpl"),
+		// odooversioncomponents.NewService("longpolling/service.yml.tpl"),
+
+		// Cron components (app.kubernetes.io/component = cron)
+		odooversioncomponents.NewDeployment("cron/deployment.yml.tpl"),
+
+		// Remover acting upon finalizers of deleted instances
+		// odooversioncomponents.NewRemover(),
+
+		// Done on the cluster controller as owner of the ingress resource
+		// // L7 instance routing
+		// // Keep it at the end of this block to consume a consistent final state
+		// odooversioncomponents.NewRouter("sync-migrator.yml.tpl"),
+	})
+	return err
 }

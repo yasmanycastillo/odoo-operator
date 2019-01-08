@@ -22,110 +22,100 @@ spec:
           type: object
         spec:
           properties:
-            adminPassword:
+            appsecret:
               type: string
             config:
-              type: string
-            customConfig:
-              type: string
-            dbNamespaceSpec:
+              type: object
+            database:
               properties:
                 dbAdmin:
                   properties:
+                    host:
+                      type: string
                     password:
+                      type: string
+                    port:
                       type: string
                     user:
                       type: string
                   required:
+                  - host
+                  - port
                   - user
                   - password
                   type: object
-                host:
-                  type: string
                 password:
-                  type: string
-                port:
                   type: string
                 user:
                   type: string
                 userQuota:
                   type: object
               required:
-              - host
-              - port
               - user
               - password
               - dbAdmin
               type: object
-            nodeSelector:
+            image:
+              properties:
+                registry:
+                  type: string
+                repo:
+                  type: string
+                secret:
+                  type: string
+              required:
+              - registry
+              - repo
               type: object
-            resourceQuotaSpec:
+            nodes:
               type: object
-            tiers:
-              items:
-                properties:
-                  dbConn:
-                    format: int32
-                    type: integer
-                  name:
-                    type: string
-                  qos:
-                    type: string
-                  replicas:
-                    format: int32
-                    type: integer
-                  resources:
+            resources:
+              properties:
+                tiers:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      qos:
+                        type: string
+                      replicas:
+                        format: int32
+                        type: integer
+                      resources:
+                        type: object
+                    required:
+                    - name
                     type: object
-                required:
-                - name
-                type: object
-              type: array
+                  type: array
+                volumes:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      pvcspec:
+                        type: object
+                    required:
+                    - name
+                    - pvcspec
+                    type: object
+                  type: array
+              type: object
             tracks:
               items:
                 properties:
                   config:
-                    type: string
-                  customConfig:
-                    type: string
-                  image:
-                    properties:
-                      image:
-                        type: string
-                      registry:
-                        type: string
-                      secret:
-                        type: string
-                      tag:
-                        type: string
-                    required:
-                    - registry
-                    - image
-                    - tag
                     type: object
                   name:
                     type: string
                 required:
                 - name
-                - image
-                type: object
-              type: array
-            volumes:
-              items:
-                properties:
-                  name:
-                    type: string
-                  spec:
-                    type: object
-                required:
-                - name
-                - spec
                 type: object
               type: array
           required:
           - tracks
-          - tiers
-          - dbNamespaceSpec
-          - adminPassword
+          - image
+          - database
+          - config
           type: object
         status:
           properties:

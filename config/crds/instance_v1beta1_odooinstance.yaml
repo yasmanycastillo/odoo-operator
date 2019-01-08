@@ -24,14 +24,8 @@ spec:
           type: object
         spec:
           properties:
-            dbQuota:
-              format: int32
-              type: integer
             demo:
               type: boolean
-            fsQuota:
-              format: int32
-              type: integer
             hostname:
               type: string
             initModules:
@@ -40,19 +34,17 @@ spec:
               type: array
             initSQL:
               type: string
-            parentname:
+            parentHostname:
               type: string
             version:
               type: string
           required:
           - hostname
           - version
-          - parentname
+          - parentHostname
           - demo
           - initModules
           - initSQL
-          - dbQuota
-          - fsQuota
           type: object
         status:
           properties:
@@ -75,12 +67,6 @@ spec:
                 - status
                 type: object
               type: array
-            usedDbQuota:
-              format: int32
-              type: integer
-            usedFsQuota:
-              format: int32
-              type: integer
           type: object
   version: v1beta1
 status:

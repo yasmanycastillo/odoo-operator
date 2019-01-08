@@ -1,0 +1,37 @@
+apiVersion: instance.odoo.io/v1beta1
+kind: OdooInstanceList
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: odooinstancelist-sample
+items:
+- spec:
+    hostname: honolulu.example.com
+    version: "0.0.1"
+    initModules:
+      - account
+      - purchase
+      - sale
+    initSQL: |
+      UPDATE res_company SET name="Petshop" WHERE id=1;
+# The parentHostname field triggers a copying instead of a new creation
+# In case of migration/copying -> init* adopt additional* semantics
+# Migrations are triggered on version bumps
+- spec:
+    parentHostname: honolulu.example.com  # will be copied
+    hostname: testing.honolulu.example.com
+    demo: true  # Initialize demo mode
+    initModules:
+      - testing_environment
+    initSQL: |
+      UPDATE res_company SET name="Petshop in Testing mode" WHERE id=1;
+- spec:
+    parentHostname: honolulu.example.com   # will be copied ...
+    hostname: testmigration.honolulu.example.com
+    version: "0.1.0"  # ... and migrated
+    initModules:
+      - testing_environment
+      - account_accountant
+    initSQL: |
+      UPDATE res_company SET name="Migrated Petshop" WHERE id=1;
+

@@ -13,12 +13,17 @@
   branch = "master"
   digest = "1:849cf2fffd00bcbe7a49fa384c45f9d6c643c2de47bd576875656d9d7ab59265"
   name = "github.com/Ridecell/ridecell-operator"
-  packages = [
-    "pkg/components",
-    "pkg/templates",
-  ]
+  packages = ["pkg/templates"]
   pruneopts = "T"
   revision = "eb3f8637d08c3f265cbdb973cbcbc42228354cc1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:dda47209fb1159609f678a20e66e5f10923a2790826b779cb17410ed35b252af"
+  name = "github.com/blaggacao/ridecell-operator"
+  packages = ["pkg/components"]
+  pruneopts = "T"
+  revision = "25417da41909db96155fbc53ec26b704339398be"
 
 [[projects]]
   digest = "1:9f42202ac457c462ad8bb9642806d275af9ab4850cf0b1960b9c6f083d4a309a"
@@ -577,6 +582,14 @@
   version = "v0.9.1"
 
 [[projects]]
+  digest = "1:d7114f586c222bfc8ef4b65ed91dcae7ad7469ddb38c907e5f90058708006c9c"
+  name = "gopkg.in/ini.v1"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "6ed8d5f64cd79a498d1f3fab5880cc376ce41bbe"
+  version = "v1.41.0"
+
+[[projects]]
   branch = "v1"
   digest = "1:0caa92e17bc0b65a98c63e5bc76a9e844cd5e56493f8fdbb28fad101a16254d9"
   name = "gopkg.in/tomb.v1"
@@ -876,7 +889,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/Ridecell/ridecell-operator/pkg/components",
+    "github.com/blaggacao/ridecell-operator/pkg/components",
     "github.com/emicklei/go-restful",
     "github.com/golang/glog",
     "github.com/lib/pq",
@@ -885,6 +898,7 @@
     "github.com/shurcooL/vfsgen",
     "github.com/stretchr/testify/assert",
     "golang.org/x/net/context",
+    "gopkg.in/ini.v1",
     "k8s.io/api/apps/v1",
     "k8s.io/api/batch/v1",
     "k8s.io/api/core/v1",
@@ -895,7 +909,6 @@
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/types",
-    "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/sets",
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
@@ -909,6 +922,7 @@
     "sigs.k8s.io/controller-runtime/pkg/handler",
     "sigs.k8s.io/controller-runtime/pkg/manager",
     "sigs.k8s.io/controller-runtime/pkg/reconcile",
+    "sigs.k8s.io/controller-runtime/pkg/runtime/log",
     "sigs.k8s.io/controller-runtime/pkg/runtime/scheme",
     "sigs.k8s.io/controller-runtime/pkg/runtime/signals",
     "sigs.k8s.io/controller-runtime/pkg/source",

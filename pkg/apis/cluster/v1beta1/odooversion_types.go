@@ -37,8 +37,9 @@ import (
 
 // OdooVersionSpec defines the desired state of OdooVersion
 type OdooVersionSpec struct {
-	Version string `json:"name"`
-	Bugfix  bool   `json:"bugfix"`
+	Version string            `json:"name"`
+	Track   OdooTracknameType `json:"track"`
+	Bugfix  bool              `json:"bugfix"`
 	// +optional
 	Config map[string]ConfigValue `json:"config,omitempty"`
 }

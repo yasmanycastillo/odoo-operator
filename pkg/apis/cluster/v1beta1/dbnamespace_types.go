@@ -35,21 +35,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // DBNamespaceSpec defines the desired state of DBNamespace
 type DBNamespaceSpec struct {
-	Host      string             `json:"host"`
-	Port      string             `json:"port"`
 	User      string             `json:"user"`
 	Password  string             `json:"password"`
-	DBCluster DBAdminCredentials `json:"dbAdmin"`
+	Admin     DBAdminCredentials `json:"dbAdmin"`
 	UserQuota v1.ResourceList    `json:"userQuota,omitempty"`
 }
 
 // DBAdminCredentials defines the DB admin credentials
 type DBAdminCredentials struct {
+	Host     string `json:"host"`
+	Port     string `json:"port"`
 	User     string `json:"user"`
 	Password string `json:"password"`
 }

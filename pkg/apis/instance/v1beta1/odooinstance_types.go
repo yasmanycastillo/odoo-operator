@@ -35,9 +35,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // OdooInstanceSpec defines the desired state of OdooInstance
 type OdooInstanceSpec struct {
 	// The host name of this instance (mutable)
@@ -45,17 +42,13 @@ type OdooInstanceSpec struct {
 	// The version of this instance (immutable)
 	Version string `json:"version"`
 	// +optional
-	Parentname *string `json:"parentname"`
+	ParentHostname *string `json:"parentHostname"`
 	// +optional
 	Demo *bool `json:"demo"`
 	// +optional
 	InitModules []string `json:"initModules"`
 	// +optional
 	InitSQL string `json:"initSQL"`
-	// +optional
-	DBQuota int32 `json:"dbQuota"`
-	// +optional
-	FilestoreQuota int32 `json:"fsQuota"`
 }
 
 // OdooInstanceStatus defines the observed state of OdooInstance
@@ -65,11 +58,6 @@ type OdooInstanceStatus struct {
 	// +patchMergeKey=type
 	// +patchStrategy=merge
 	Conditions []OdooInstanceStatusCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
-	// Additional Status
-	// +optional
-	UsedDbQuota int32 `json:"usedDbQuota,omitempty"`
-	// +optional
-	UsedFsQuota int32 `json:"usedFsQuota,omitempty"`
 }
 
 // OdooInstanceStatusCondition defines an observable OdooInstanceStatus condition

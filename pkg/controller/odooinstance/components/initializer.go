@@ -33,7 +33,7 @@ package components
 import (
 	"github.com/golang/glog"
 
-	"github.com/Ridecell/ridecell-operator/pkg/components"
+	"github.com/blaggacao/ridecell-operator/pkg/components"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -65,7 +65,7 @@ func (comp *initializerComponent) WatchTypes() []runtime.Object {
 
 func (_ *initializerComponent) IsReconcilable(ctx *components.ComponentContext) bool {
 	instance := ctx.Top.(*instancev1beta1.OdooInstance)
-	if instance.Spec.Parentname != nil {
+	if instance.Spec.ParentHostname != nil {
 		// The copier component is the one that should copy a parent instance
 		return false
 	}

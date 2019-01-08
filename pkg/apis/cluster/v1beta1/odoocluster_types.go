@@ -20,7 +20,7 @@
  * ALTERNATIVE LICENCING OPTION
  *
  * You can be released from the requirements of the license by purchasing
- * a commercial license. Buying such a license is mandatory as soon as you
+ * a commercial license.  Buying such a license is mandatory as soon as you
  * develop commercial activities involving the Odoo-Operator software without
  * disclosing the source code of your own applications. These activities
  * include: Offering paid services to a customer as an ASP, shipping Odoo-
@@ -37,20 +37,16 @@ import (
 
 // OdooClusterSpec defines the desired state of OdooCluster
 type OdooClusterSpec struct {
-	Tracks          []OdooTrackSpec `json:"tracks"`
-	Tiers           []TierSpec      `json:"tiers"`
-	Volumes         []Volume        `json:"volumes,omitempty"`
-	DBSpec          DBNamespaceSpec `json:"dbNamespaceSpec"`
-	AdminPassword   string          `json:"adminPassword"`
-	ImageRepository string          `json:"imagerepo"`
+	Tracks   []OdooTrackSpec        `json:"tracks"`
+	Image    OdooImageRepoSpec      `json:"image"`
+	Database DBNamespaceSpec        `json:"database"`
+	Config   map[string]ConfigValue `json:"config"`
 	// +optional
-	PullSecret string `json:"pullsecret"`
+	AppSecret string `json:"appsecret,omitempty"`
 	// +optional
-	ResourceQuotaSpec *v1.ResourceQuotaSpec `json:"resourceQuotaSpec,omitempty"`
+	Resources OdooResource `json:"resources,omitempty"`
 	// +optional
-	Config *string `json:"config,omitempty"`
-	// +optional
-	NodeSelector *v1.NodeSelector `json:"nodeSelector,omitempty"`
+	NodeSelector *v1.NodeSelector `json:"nodes,omitempty"`
 
 	// MailServer  bool `json:"mailServer"`
 	// OnlyOffice  bool `json:"onlyOffice"`
@@ -60,21 +56,23 @@ type OdooClusterSpec struct {
 	// OpenProject bool `json:"openProject"`
 }
 
-// OdooImageSpec defines an Image and (optionally) it's registry credentials
-type OdooImageSpec struct {
-	Repository string            `json:"repository"`
-	Image      string            `json:"image"`
-	Trackname  OdooTracknameType `json:"track"`
-	Version    string            `json:"version"`
+// OdooImageRepoSpec defines the cluster-level image configuration
+type OdooImageRepoSpec struct {
+	Registry string `json:"registry"`
+	Repo     string `json:"repo"`
 	// +optional
 	Secret string `json:"secret,omitempty"`
 }
 
-// TierSpec defines the desired state of a Tier
-type TierSpec struct {
-	Name Tier `json:"name"`
-	// +optional
-	DBConn *int32 `json:"dbConn,omitempty"`
+// OdooResource defines the desired resource spec
+type OdooResource struct {
+	Tiers   []OdooTierSpec   `json:"tiers,omitempty"`
+	Volumes []OdooVolumeSpec `json:"volumes,omitempty"`
+}
+
+// OdooTierSpec specs a tier
+type OdooTierSpec struct {
+	Name string `json:"name"`
 	// +optional
 	Replicas int32 `json:"replicas,omitempty"`
 	// +optional
@@ -83,33 +81,12 @@ type TierSpec struct {
 	Resources *v1.ResourceRequirements `json:"resources,omitempty"`
 }
 
-// Volume defines the desired state of a Volume
-type Volume struct {
-	Name VolumeName                   `json:"name"`
-	Spec v1.PersistentVolumeClaimSpec `json:"spec"`
+// OdooVolumeSpec specs a volume
+type OdooVolumeSpec struct {
+	Name string `json:"name"`
+	// +optional
+	PVCSpec v1.PersistentVolumeClaimSpec `json:"pvcspec"`
 }
-
-// VolumeName can either be "Data" or "Backup"
-type VolumeName string
-
-const (
-	// PVCNameData ...
-	PVCNameData VolumeName = "Data"
-	// PVCNameBackup ...
-	PVCNameBackup VolumeName = "Backup"
-)
-
-// Tier can either be "Server", "Cron" or "LongPolling"
-type Tier string
-
-const (
-	// ServerTier ...
-	ServerTier Tier = "Server"
-	// CronTier ...
-	CronTier Tier = "Cron"
-	// LongpollingTier ...
-	LongpollingTier Tier = "LongPolling"
-)
 
 // OdooClusterStatus defines the observed state of OdooCluster
 type OdooClusterStatus struct {
@@ -144,6 +121,10 @@ const (
 	OdooClusterStatusConditionTypeCreated OdooClusterStatusConditionType = "Created"
 	// OdooClusterStatusConditionTypeReconciled ...
 	OdooClusterStatusConditionTypeReconciled OdooClusterStatusConditionType = "Reconciled"
+	// OdooClusterStatusConditionTypeAppSecretLoaned ...
+	OdooClusterStatusConditionTypeAppSecretLoaned OdooClusterStatusConditionType = "AppSecretLoaned"
+	// OdooClusterStatusConditionTypePullSecretLoaned ...
+	OdooClusterStatusConditionTypePullSecretLoaned OdooClusterStatusConditionType = "PullSecretLoaned"
 	// OdooClusterStatusConditionTypeErrored ...
 	OdooClusterStatusConditionTypeErrored OdooClusterStatusConditionType = "Errored"
 )

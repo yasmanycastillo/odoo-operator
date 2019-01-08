@@ -20,20 +20,14 @@ namePrefix: odoo-operator-
 # markers ("---").
 resources:
 - namespace.yaml
-- secret.yaml
-- ../../base/ingress.yaml
+# - secret.yaml
 - ../../base/pvc-data.yaml
 - ../../base/pvc-backup.yaml
 - ../../base/cluster_v1beta1_odoocluster.yaml
+- ../../base/cluster_v1beta1_odooversions.yaml
+- ../../base/instance_v1beta1_odooinstances.yaml
 
 patches:
   - patch_odoocluster.yaml
 
-patchesJson6902:
-- target:
-    group: extensions
-    version: v1beta1
-    kind: Ingress
-    name: ingress
-  path: patch_ingress.json
 

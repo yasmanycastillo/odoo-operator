@@ -1,7 +1,0 @@
-[
-  {"op": "replace", "path": "/spec/rules/0/host", "value": "testcluster.xoe.cloud"},
-  {"op": "replace", "path": "/spec/rules/0/http/paths/0/backend/serviceName", "value": "odoo-operator-odoocluster-sample-master-server-service"},
-  {"op": "replace", "path": "/spec/rules/0/http/paths/1/backend/serviceName", "value": "odoo-operator-odoocluster-sample-master-longpolling-service"},
-  {"op": "replace", "path": "/spec/tls/0/hosts/0", "value": "testcluster.xoe.cloud"},
-  {"op": "replace", "path": "/spec/tls/0/secretName", "value": "odoo-operator-odoocluster-ingress-cert"}
-]

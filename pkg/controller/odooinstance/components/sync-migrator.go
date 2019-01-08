@@ -33,7 +33,7 @@ package components
 import (
 	"github.com/golang/glog"
 
-	"github.com/Ridecell/ridecell-operator/pkg/components"
+	"github.com/blaggacao/ridecell-operator/pkg/components"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -64,7 +64,7 @@ func (_ *synchMigratorComponent) WatchTypes() []runtime.Object {
 
 func (_ *synchMigratorComponent) IsReconcilable(ctx *components.ComponentContext) bool {
 	instance := ctx.Top.(*instancev1beta1.OdooInstance)
-	if instance.Spec.Parentname == nil {
+	if instance.Spec.ParentHostname == nil {
 		// The migrator component is never interfering to initialize a root instance
 		return false
 	}
@@ -75,9 +75,9 @@ func (_ *synchMigratorComponent) IsReconcilable(ctx *components.ComponentContext
 	}
 	// Get the parent instance ...
 	parentinstance := &instancev1beta1.OdooInstance{}
-	err := ctx.Get(ctx.Context, types.NamespacedName{Name: *instance.Spec.Parentname, Namespace: instance.Namespace}, parentinstance)
+	err := ctx.Get(ctx.Context, types.NamespacedName{Name: *instance.Spec.ParentHostname, Namespace: instance.Namespace}, parentinstance)
 	if err != nil && errors.IsNotFound(err) {
-		glog.Infof("[%s/%s] sync-migrator: Did not find parent OdooInstance %s/%s\n", instance.Namespace, instance.Name, instance.Namespace, instance.Spec.Parentname)
+		glog.Infof("[%s/%s] sync-migrator: Did not find parent OdooInstance %s/%s\n", instance.Namespace, instance.Name, instance.Namespace, instance.Spec.ParentHostname)
 		return false
 	} else if err != nil {
 		return false

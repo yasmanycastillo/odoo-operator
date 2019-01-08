@@ -33,32 +33,36 @@ import (
 	instancev1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/instance/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"github.com/Ridecell/ridecell-operator/pkg/components"
+	"github.com/blaggacao/ridecell-operator/pkg/components"
 	odooinstancecomponents "github.com/xoe-labs/odoo-operator/pkg/controller/odooinstance/components"
 )
 
 // Add creates a new OdooInstance Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
+// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=jobs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=cronjobs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=instance.odoo.io,resources=odooinstances,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=instance.odoo.io,resources=odooinstances/status,verbs=get;update;patch
 func Add(mgr manager.Manager) error {
 	_, err := components.NewReconciler("odoo-instance-controller", mgr, &instancev1beta1.OdooInstance{}, Templates, []components.Component{
 		// Set default values.
 		odooinstancecomponents.NewDefaults(),
 
-		// Top-level components.
+		// Top-level components
 		odooinstancecomponents.NewInitializer("initializer.yml.tpl"),
 		odooinstancecomponents.NewCopier("copier.yml.tpl"),
 
-		// Secondary components.
+		// Secondary components
 		odooinstancecomponents.NewSyncMigrator("sync-migrator.yml.tpl"),
 		// odooinstancecomponents.NewAsynchMigrator("asynch-migrator.yml.tpl"),
 
-		// Remover acting upon finalizers of deleted instances
-		odooinstancecomponents.NewRemover(),
+		// Backup job components
+		odooinstancecomponents.NewBackuper("backuper.yml.tpl"),
 
-		// Done on the cluster controller as owner of the ingress resource
-		// // L7 instance routing
-		// // Keep it at the end of this block to consume a consistent final state
-		// odooinstancecomponents.NewRouter("sync-migrator.yml.tpl"),
+		// Remover acting upon finalizers of deleted instances
+		// odooinstancecomponents.NewRemover(),
 	})
 	return err
 }

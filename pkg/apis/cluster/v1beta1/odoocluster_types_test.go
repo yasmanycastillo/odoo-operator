@@ -48,12 +48,7 @@ func TestStorageOdooCluster(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "default",
-		},
-		Spec: OdooClusterSpec{
-			Tracks: []TrackSpec{},
-			Tiers:  []TierSpec{},
-		},
-	}
+		}}
 	g := gomega.NewGomegaWithT(t)
 
 	// Test Create

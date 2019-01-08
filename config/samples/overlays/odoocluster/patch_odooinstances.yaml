@@ -1,0 +1,13 @@
+apiVersion: instance.odoo.io/v1beta1
+kind: OdooInstanceList
+items:
+- spec:
+    hostname: honolulu.example.com
+    version: "0.0.1"
+    initModules:
+      - account
+      - purchase
+      - sale
+    initSQL: |
+      UPDATE res_company SET name="Petshop" WHERE id=1;
+

@@ -29,9 +29,17 @@ rules:
   - patch
   - delete
 - apiGroups:
+  - apps
+  resources:
+  - deployments/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
   - ""
   resources:
-  - persistenvolumeclaims
+  - persistentvolumeclaims
   verbs:
   - get
   - list
@@ -43,15 +51,11 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - configmaps
+  - persistentvolumeclaims/status
   verbs:
   - get
-  - list
-  - watch
-  - create
   - update
   - patch
-  - delete
 - apiGroups:
   - ""
   resources:
@@ -67,7 +71,15 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - services
+  - secrets/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - extensions
+  resources:
+  - ingress
   verbs:
   - get
   - list
@@ -77,17 +89,13 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - cluster.odoo.io
+  - extensions
   resources:
-  - dbnamespaces
+  - ingress/status
   verbs:
   - get
-  - list
-  - watch
-  - create
   - update
   - patch
-  - delete
 - apiGroups:
   - cluster.odoo.io
   resources:
@@ -101,9 +109,17 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - apps
+  - cluster.odoo.io
   resources:
-  - deployments
+  - odooclusters/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
   verbs:
   - get
   - list
@@ -113,9 +129,49 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - apps
+  - batch
   resources:
-  - deployments/status
+  - jobs/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - instance.odoo.io
+  resources:
+  - odooinstances
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - instance.odoo.io
+  resources:
+  - odooinstances/status
   verbs:
   - get
   - update
@@ -136,6 +192,46 @@ rules:
   - cluster.odoo.io
   resources:
   - odootracks/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps/status
   verbs:
   - get
   - update

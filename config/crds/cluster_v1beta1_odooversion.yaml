@@ -11,6 +11,8 @@ spec:
     kind: OdooVersion
     plural: odooversions
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       properties:
@@ -21,8 +23,41 @@ spec:
         metadata:
           type: object
         spec:
+          properties:
+            bugfix:
+              type: boolean
+            config:
+              type: object
+            name:
+              type: string
+            track:
+              type: string
+          required:
+          - name
+          - track
+          - bugfix
           type: object
         status:
+          properties:
+            conditions:
+              items:
+                properties:
+                  lastTransitionTime:
+                    format: date-time
+                    type: string
+                  message:
+                    type: string
+                  reason:
+                    type: string
+                  status:
+                    type: string
+                  type:
+                    type: string
+                required:
+                - type
+                - status
+                type: object
+              type: array
           type: object
   version: v1beta1
 status:

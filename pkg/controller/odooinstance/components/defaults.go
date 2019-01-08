@@ -33,7 +33,7 @@ package components
 import (
 	// "fmt"
 
-	"github.com/Ridecell/ridecell-operator/pkg/components"
+	"github.com/blaggacao/ridecell-operator/pkg/components"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 

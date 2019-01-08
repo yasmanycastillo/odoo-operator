@@ -36,8 +36,7 @@ import (
 
 // OdooTrackSpec defines the desired state of OdooTrack
 type OdooTrackSpec struct {
-	Name         OdooTracknameType `json:"name"`
-	StartVersion OdooVersionSpec   `json:"startversion"`
+	Name OdooTracknameType `json:"name"`
 	// +optional
 	Config map[string]ConfigValue `json:"config,omitempty"`
 }
