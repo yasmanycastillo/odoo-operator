@@ -18,11 +18,12 @@ package templates
 
 import (
 	"bytes"
+	"github.com/golang/glog"
 	"net/http"
 	"path"
 	"text/template"
 
-	// "github.com/golang/glog"
+	"github.com/Masterminds/sprig"
 	"github.com/shurcooL/httpfs/path/vfspath"
 	"github.com/shurcooL/httpfs/vfsutil"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -32,6 +33,9 @@ import (
 func parseTemplate(fs http.FileSystem, filename string) (*template.Template, error) {
 	// Create a template object.
 	tmpl := template.New(path.Base(filename))
+
+	// Add generally useful custom utility functions.
+	tmpl = tmpl.Funcs(sprig.TxtFuncMap())
 
 	// Parse any helpers if present.
 	helpers, err := vfspath.Glob(fs, "helpers/*.tpl")
@@ -86,15 +90,19 @@ func parseObject(rawObject string) (runtime.Object, error) {
 func Get(fs http.FileSystem, filename string, data interface{}) (runtime.Object, error) {
 	tmpl, err := parseTemplate(fs, filename)
 	if err != nil {
+		glog.Errorf("templates: parse template failed, filname: %#v\n", filename)
 		return nil, err
 	}
 	out, err := renderTemplate(tmpl, data)
 	if err != nil {
+		glog.Errorf("templates: render failed, template: %#v, data: %#v\n", tmpl, data)
 		return nil, err
 	}
 	obj, err := parseObject(out)
 	if err != nil {
+		glog.Errorf("templates: pares object failed, out: %#v\n", out)
 		return nil, err
 	}
+
 	return obj, nil
 }

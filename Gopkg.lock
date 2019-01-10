@@ -10,20 +10,39 @@
   version = "v0.29.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:849cf2fffd00bcbe7a49fa384c45f9d6c643c2de47bd576875656d9d7ab59265"
-  name = "github.com/Ridecell/ridecell-operator"
-  packages = ["pkg/templates"]
+  digest = "1:55388fd080150b9a072912f97b1f5891eb0b50df43401f8b75fb4273d3fec9fc"
+  name = "github.com/Masterminds/semver"
+  packages = ["."]
   pruneopts = "T"
-  revision = "eb3f8637d08c3f265cbdb973cbcbc42228354cc1"
+  revision = "c7af12943936e8c39859482e61f0574c2fd7fc75"
+  version = "v1.4.2"
+
+[[projects]]
+  digest = "1:855fd08764898bb4199216f9745673f7a78539ed727c7853d7e147a94cee6680"
+  name = "github.com/Masterminds/sprig"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "544a9b1d90f323f6509491b389714fbbd126bee3"
+  version = "v2.17.1"
+
+[[projects]]
+  digest = "1:3b10c6fd33854dc41de2cf78b7bae105da94c2789b6fa5b9ac9e593ea43484ac"
+  name = "github.com/aokoli/goutils"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "41ac8693c5c10a92ea1ff5ac3a7f95646f6123b0"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:0f0801e19a482b9d2de23e404e97b664f92f0a75c9565f361c9c3ca5fac1daea"
+  digest = "1:a24bf11a8e1e3b9dd92e217d59686bbdfe574e4aec0c30c0691728813f48564e"
   name = "github.com/blaggacao/ridecell-operator"
-  packages = ["pkg/components"]
+  packages = [
+    "pkg/components",
+    "pkg/templates",
+  ]
   pruneopts = "T"
-  revision = "dfa90f575042253fb0677a37ceb9d41a8a0a0729"
+  revision = "34443f8125494150d95fdaf6acf5a42a1a2921cd"
 
 [[projects]]
   digest = "1:9f42202ac457c462ad8bb9642806d275af9ab4850cf0b1960b9c6f083d4a309a"
@@ -188,6 +207,14 @@
   pruneopts = "T"
   revision = "a30252cb686a21eb2d0b98132633053ec2f7f1e5"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:f9a5e090336881be43cfc1cf468330c1bdd60abdc9dd194e0b1ab69f4b94dd7c"
+  name = "github.com/huandu/xstrings"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "f02667b379e2fb5916c3cda2cf31e0eb885d79f8"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:3477d9dd8c135faab978bac762eaeafb31f28d6da97ef500d5c271966f74140a"
@@ -443,7 +470,11 @@
   branch = "master"
   digest = "1:45678a8bf1c216b5c5309139c6a1cdde86291093f21cad721687c6e89a10780b"
   name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
+  packages = [
+    "pbkdf2",
+    "scrypt",
+    "ssh/terminal",
+  ]
   pruneopts = "T"
   revision = "e3636079e1a4c1f337f212cc5cd2aca108f6c900"
 
