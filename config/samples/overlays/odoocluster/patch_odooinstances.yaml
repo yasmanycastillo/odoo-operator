@@ -1,14 +1,25 @@
 apiVersion: instance.odoo.io/v1beta1
-kind: OdooInstanceList
-items:
-- spec:
-    cluster: "odoo-operator-odoocluster-sample"
-    hostname: honolulu.example.com
-    version: "0.0.1"
-    initModules:
-      - account
-      - purchase
-      - sale
-    initSQL: |
-      UPDATE res_company SET name="Petshop" WHERE id=1;
-
+kind: OdooInstance
+metadata:
+  name: odooinstance-honolulu-sample
+spec:
+  cluster: "odoo-operator-odoocluster-sample"
+---
+apiVersion: instance.odoo.io/v1beta1
+kind: OdooInstance
+metadata:
+  name: odooinstance-testing-honolulu-sample
+spec:
+  cluster: "odoo-operator-odoocluster-sample"
+  initModules:
+    - crm
+---
+apiVersion: instance.odoo.io/v1beta1
+kind: OdooInstance
+metadata:
+  name: odooinstance-testmigration-honolulu-sample
+spec:
+  cluster: "odoo-operator-odoocluster-sample"
+  initModules:
+    - account_accountant
+    - crm

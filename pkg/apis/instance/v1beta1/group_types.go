@@ -36,13 +36,15 @@ type OdooInstanceSpec struct {
 	// The host name of this instance (mutable)
 	Hostname string `json:"hostname"`
 	// The version of this instance (immutable)
-	Version string `json:"version"`
+	// Either Version or ParentHostname is required
 	// +optional
-	ParentHostname *string `json:"parentHostname"`
+	Version string `json:"version,omitempty"`
 	// +optional
-	Demo *bool `json:"demo"`
+	ParentHostname *string `json:"parentHostname,omitempty"`
 	// +optional
-	InitModules []string `json:"initModules"`
+	Demo *bool `json:"demo,omitempty"`
 	// +optional
-	InitSQL string `json:"initSQL"`
+	InitModules []string `json:"initModules,omitempty"`
+	// +optional
+	InitSQL string `json:"initSQL,omitempty"`
 }

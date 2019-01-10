@@ -1,0 +1,20 @@
+apiVersion: cluster.odoo.io/v1beta1
+kind: OdooVersion
+metadata:
+  name: odooversion-0.0.1-sample
+spec:
+  cluster: "odoo-operator-odoocluster-sample"
+---
+apiVersion: cluster.odoo.io/v1beta1
+kind: OdooVersion
+metadata:
+  name: odooversion-0.0.2-sample
+spec:
+  cluster: "odoo-operator-odoocluster-sample"
+---
+apiVersion: cluster.odoo.io/v1beta1
+kind: OdooVersion
+metadata:
+  name: odooversion-0.1.0-sample
+spec:
+  cluster: "odoo-operator-odoocluster-sample"

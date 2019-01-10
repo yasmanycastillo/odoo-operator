@@ -29,11 +29,5 @@ resources:
 
 patches:
   - patch_odoocluster.yaml
-
-patchesJson6902:
-- target:
-    group: cluster.odoo.io
-    version: v1beta1
-    kind: OdooVersionList
-    name: odooversionlist-sample
-  path: patch_odooversions.json
+  - patch_odooinstances.yaml
+  - patch_odooversions.yaml

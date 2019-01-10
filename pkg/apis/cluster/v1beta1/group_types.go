@@ -75,7 +75,8 @@ type OdooVersionSpec struct {
 	Version string            `json:"version"`
 	Track   OdooTracknameType `json:"track"`
 	Cluster string            `json:"cluster"`
-	Bugfix  bool              `json:"bugfix"`
+	// +optional
+	Bugfix bool `json:"bugfix,omitempty"`
 	// +optional
 	Config map[string]ConfigValue `json:"config,omitempty"`
 }

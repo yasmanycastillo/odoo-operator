@@ -43,11 +43,6 @@ spec:
           required:
           - cluster
           - hostname
-          - version
-          - parentHostname
-          - demo
-          - initModules
-          - initSQL
           type: object
         status:
           properties:

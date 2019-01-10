@@ -55,7 +55,6 @@ spec:
                   - version
                   - track
                   - cluster
-                  - bugfix
                   type: object
                 status:
                   properties:
