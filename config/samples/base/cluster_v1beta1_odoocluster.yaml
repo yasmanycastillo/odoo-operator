@@ -6,32 +6,33 @@ metadata:
   name: odoocluster-sample
 spec:
   appsecret: app-secret-name
+
+  config:
+    options: # Translates to INI section [options]
+      db_password: "odoo-operator-password"
+      db_user: "odoo-operator-user"
+
+  database:
+    dbAdmin:  # Admin access to an external DB cluster
+      host: "example.com"
+      password: "postgres"
+      port: "5432"
+      user: "postgres"
+    password: "odoo-operator-password"
+    user: "odoo-operator-user"
+
   image:
     registry: "registry.gitlab.com"
     repo: "xoe-labs/odoo-xoe"
     secret: "pull-secret"
 
-  database:
-    user: "odoo-operator-user"
-    password: "odoo-operator-password"
-    dbAdmin:  # Admin access to an external DB cluster
-      host: "example.com"
-      port: "5432"
-      user: "postgres"
-      password: "postgres"
-
-  config:
-    options: # Translates to INI section [options]
-      db_user: "odoo-user"
-      db_password: "odoo-password"
-
   tracks:
   - name: "11.0"
   - name: "12.0"
-  - name: "master"
-    config:
+  - config:
       options:
         without_demo: "false"
+    name: "master"
 
   resources:
     tiers:
