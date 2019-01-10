@@ -8,5 +8,5 @@ metadata:
     app.kubernetes.io/component: {{ block "componentType" . }}{{ end }}
     app.kubernetes.io/managed-by: odoo-operator
     app.kubernetes.io/part-of: {{ .Instance.Name }}
-    app.kubernetes.io/version: {{if .Instance.Spec.Version }}{{ .Instance.Spec.Version }}{{ else }}n/a{{ end}}
+    app.kubernetes.io/version: n/a
 {{ end }}
