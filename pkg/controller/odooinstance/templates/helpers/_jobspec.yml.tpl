@@ -4,7 +4,8 @@ spec:
   backoffLimit: 1
   activeDeadlineSeconds: 360
   template:
-{{ template "metadata" . | indent 4}}
+    metadata:
+{{ template "metadatalabels" . | indent 6}}
     spec:
       restartPolicy: Never
       imagePullSecrets:

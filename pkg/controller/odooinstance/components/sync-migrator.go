@@ -70,7 +70,7 @@ func (_ *synchMigratorComponent) IsReconcilable(ctx *components.ComponentContext
 		return false
 	}
 	createdCondition := instance.GetStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated)
-	if createdCondition.Status != corev1.ConditionTrue {
+	if createdCondition != nil && createdCondition.Status != corev1.ConditionTrue {
 		// Apply migrations only on created instances
 		return false
 	}
