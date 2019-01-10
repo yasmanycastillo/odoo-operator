@@ -33,7 +33,6 @@ package components
 import (
 	"github.com/golang/glog"
 
-	"github.com/blaggacao/ridecell-operator/pkg/components"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -41,7 +40,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	// clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
+	"github.com/blaggacao/ridecell-operator/pkg/components"
 	instancev1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/instance/v1beta1"
 )
 

@@ -1,4 +1,4 @@
-{{ define "componentName" }}lb/l7router{{ end }}
+{{ define "componentName" }}lb-l7router{{ end }}
 {{ define "componentType" }}networking{{ end }}
 
 apiVersion: extensions/v1beta1
@@ -11,8 +11,8 @@ kind: Ingress
 spec:
   backend:
     serviceName: default-backend
-    servicePort: default-backend-port
+    servicePort: 80
   rules:
-{{ range _, $instance := .Extra.InstanceList.Items }}
+{{ range $instance := .Extra.InstanceList.Items }}
 {{ template "ingressrule" $instance }}
 {{ end }}

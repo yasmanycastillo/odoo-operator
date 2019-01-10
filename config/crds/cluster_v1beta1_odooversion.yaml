@@ -26,15 +26,18 @@ spec:
           properties:
             bugfix:
               type: boolean
+            cluster:
+              type: string
             config:
               type: object
-            name:
-              type: string
             track:
               type: string
+            version:
+              type: string
           required:
-          - name
+          - version
           - track
+          - cluster
           - bugfix
           type: object
         status:
@@ -42,20 +45,10 @@ spec:
             conditions:
               items:
                 properties:
-                  lastTransitionTime:
-                    format: date-time
-                    type: string
-                  message:
-                    type: string
-                  reason:
-                    type: string
-                  status:
-                    type: string
                   type:
                     type: string
                 required:
                 - type
-                - status
                 type: object
               type: array
           type: object

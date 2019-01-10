@@ -36,13 +36,13 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/blaggacao/ridecell-operator/pkg/components"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"github.com/blaggacao/ridecell-operator/pkg/components"
 	clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
 )
 

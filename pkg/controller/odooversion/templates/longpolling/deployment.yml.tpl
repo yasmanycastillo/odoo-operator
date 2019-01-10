@@ -15,9 +15,9 @@ livenessProbe:
   successThreshold: 1
 readinessProbe:
   handler:
-  	httpGet:
-  	  port: 8072
-  	  scheme: HTTP
+    httpGet:
+      port: 8072
+      scheme: HTTP
   initialDelaySeconds: 10
   timeoutSeconds: 10
   periodSeconds: 60

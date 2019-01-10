@@ -17,46 +17,6 @@ rules:
   - patch
   - delete
 - apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - apps
-  resources:
-  - deployments/status
-  verbs:
-  - get
-  - update
-  - patch
-- apiGroups:
-  - ""
-  resources:
-  - persistentvolumeclaims
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - ""
-  resources:
-  - persistentvolumeclaims/status
-  verbs:
-  - get
-  - update
-  - patch
-- apiGroups:
   - ""
   resources:
   - secrets
@@ -77,6 +37,26 @@ rules:
   - update
   - patch
 - apiGroups:
+  - appscluster.odoo.io
+  resources:
+  - dbnamespaces
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - appscluster.odoo.io
+  resources:
+  - dbnamespaces/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
   - extensions
   resources:
   - ingress
@@ -92,6 +72,46 @@ rules:
   - extensions
   resources:
   - ingress/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - instance.odoo.io
+  resources:
+  - odooinstances
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - instance.odoo.io
+  resources:
+  - odooinstances/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims/status
   verbs:
   - get
   - update
@@ -119,6 +139,26 @@ rules:
 - apiGroups:
   - batch
   resources:
+  - cronjobs
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - batch
+  resources:
   - jobs
   verbs:
   - get
@@ -139,7 +179,7 @@ rules:
 - apiGroups:
   - batch
   resources:
-  - cronjobs
+  - jobs
   verbs:
   - get
   - list
@@ -151,7 +191,27 @@ rules:
 - apiGroups:
   - batch
   resources:
-  - cronjobs/status
+  - jobs/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - batch
+  resources:
+  - jobs/status
   verbs:
   - get
   - update
@@ -199,26 +259,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - services
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - ""
-  resources:
-  - services/status
-  verbs:
-  - get
-  - update
-  - patch
-- apiGroups:
-  - ""
-  resources:
   - configmaps
   verbs:
   - get
@@ -232,6 +272,26 @@ rules:
   - ""
   resources:
   - configmaps/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - services/status
   verbs:
   - get
   - update

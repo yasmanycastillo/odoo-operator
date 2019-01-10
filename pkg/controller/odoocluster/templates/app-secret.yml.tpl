@@ -5,6 +5,5 @@ apiVersion: v1
 kind: Secret
 {{ template "metadata" . }}
 data:
-  # adminpasswd only set through Secret Loaning
-  pguser:  {{ .Instance.Spec.Database.User }}
-  pgpassword:  {{ .Instance.Spec.Database.Password }}
+  pguser:  {{ .Instance.Spec.Database.User | b64enc }}
+  pgpassword:  {{ .Instance.Spec.Database.Password | b64enc }}

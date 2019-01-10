@@ -16,7 +16,7 @@ spec:
     dbAdmin:  # Admin access to an external DB cluster
       host: "example.com"
       password: "postgres"
-      port: "5432"
+      port: 5432
       user: "postgres"
     password: "odoo-operator-password"
     user: "odoo-operator-user"
@@ -27,12 +27,12 @@ spec:
     secret: "pull-secret"
 
   tracks:
-  - name: "11.0"
-  - name: "12.0"
+  - track: "11.0"
+  - track: "12.0"
   - config:
       options:
         without_demo: "false"
-    name: "master"
+    track: "master"
 
   resources:
     tiers:

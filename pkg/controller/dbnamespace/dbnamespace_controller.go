@@ -310,7 +310,7 @@ func getDBNamespaceUsedQuota(spec *clusterv1beta1.DBNamespaceSpec) (quota *int64
 
 func getDbClusterConnection(spec *clusterv1beta1.DBNamespaceSpec) (*sql.DB, error) {
 
-	dbinfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+	dbinfo := fmt.Sprintf("host=%s port=%v user=%s password=%s dbname=%s sslmode=disable",
 		spec.Admin.Host, spec.Admin.Port, spec.Admin.User, spec.Admin.Password, DBMgtName)
 	db, err := sql.Open("postgres", dbinfo)
 	return db, err

@@ -29,7 +29,8 @@ spec:
                 password:
                   type: string
                 port:
-                  type: string
+                  format: int64
+                  type: integer
                 user:
                   type: string
               required:

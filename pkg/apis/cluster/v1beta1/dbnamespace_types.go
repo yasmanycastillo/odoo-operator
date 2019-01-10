@@ -38,7 +38,7 @@ import (
 // DBAdminCredentials defines the DB admin credentials
 type DBAdminCredentials struct {
 	Host     string `json:"host"`
-	Port     string `json:"port"`
+	Port     int    `json:"port"`
 	User     string `json:"user"`
 	Password string `json:"password"`
 }

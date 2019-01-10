@@ -24,6 +24,8 @@ spec:
           type: object
         spec:
           properties:
+            cluster:
+              type: string
             demo:
               type: boolean
             hostname:
@@ -39,6 +41,7 @@ spec:
             version:
               type: string
           required:
+          - cluster
           - hostname
           - version
           - parentHostname
@@ -51,20 +54,10 @@ spec:
             conditions:
               items:
                 properties:
-                  lastTransitionTime:
-                    format: date-time
-                    type: string
-                  message:
-                    type: string
-                  reason:
-                    type: string
-                  status:
-                    type: string
                   type:
                     type: string
                 required:
                 - type
-                - status
                 type: object
               type: array
           type: object

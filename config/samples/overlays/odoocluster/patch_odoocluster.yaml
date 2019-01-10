@@ -11,14 +11,14 @@ spec:
 
   database:
     dbAdmin:  # Admin access to an external DB cluster
-      host: "[USE PUBLIC FQDN/IP ADRESS FOR TESTING / DEV]"
+      host: "USE PUBLIC FQDN/IP ADRESS FOR TESTING / DEV"
       password: "postgres"
-      port: "5432"
+      port: 5432
       user: "postgres"
 
   config:
     options:
-      db_host: "[USE PUBLIC FQDN/IP ADRESS FOR TESTING / DEV]"
+      db_host: "USE PUBLIC FQDN/IP ADRESS FOR TESTING / DEV"
       db_port: "5432"
   # Use operator defaults
   resources: null

@@ -35,7 +35,8 @@ spec:
                     password:
                       type: string
                     port:
-                      type: string
+                      format: int64
+                      type: integer
                     user:
                       type: string
                   required:
@@ -105,10 +106,10 @@ spec:
                 properties:
                   config:
                     type: object
-                  name:
+                  track:
                     type: string
                 required:
-                - name
+                - track
                 type: object
               type: array
           required:
@@ -122,20 +123,10 @@ spec:
             conditions:
               items:
                 properties:
-                  lastTransitionTime:
-                    format: date-time
-                    type: string
-                  message:
-                    type: string
-                  reason:
-                    type: string
-                  status:
-                    type: string
                   type:
                     type: string
                 required:
                 - type
-                - status
                 type: object
               type: array
           type: object
