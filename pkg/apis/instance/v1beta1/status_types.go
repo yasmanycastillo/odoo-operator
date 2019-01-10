@@ -30,6 +30,10 @@
 
 package v1beta1
 
+import (
+	corev1 "k8s.io/api/core/v1"
+)
+
 // OdooInstanceStatusConditionType ...
 type OdooInstanceStatusConditionType string
 
@@ -38,8 +42,73 @@ const (
 	OdooInstanceStatusConditionTypeCreated OdooInstanceStatusConditionType = "Created"
 	// OdooInstanceStatusConditionTypeMigrated ...
 	OdooInstanceStatusConditionTypeMigrated OdooInstanceStatusConditionType = "Migrated"
+	// OdooInstanceStatusConditionTypeBackuped ...
+	OdooInstanceStatusConditionTypeBackuped OdooInstanceStatusConditionType = "Backuped"
 	// OdooInstanceStatusConditionTypeReconciled ...
 	OdooInstanceStatusConditionTypeReconciled OdooInstanceStatusConditionType = "Reconciled"
 	// OdooInstanceStatusConditionTypeMaintaining ...
 	OdooInstanceStatusConditionTypeMaintaining OdooInstanceStatusConditionType = "Maintaining"
 )
+
+func (i *OdooInstance) SetStatusConditionBackupCronJobSecheduleBackuped() {
+	condition := i.NewStatusCondition(
+		OdooInstanceStatusConditionTypeBackuped,
+		corev1.ConditionFalse,
+		"BackupCronJobSechedule",
+		"A backup CronJob schedule has been created to backup this database instance.")
+	i.SetStatusCondition(*condition)
+}
+
+// copier:
+func (i *OdooInstance) SetStatusConditionCopyJobCreationCreated() {
+	condition := i.NewStatusCondition(
+		OdooInstanceStatusConditionTypeCreated,
+		corev1.ConditionFalse,
+		"CopyJobCreation",
+		"A copier Job has been launched to copy and initialize this database instance.")
+	i.SetStatusCondition(*condition)
+}
+func (i *OdooInstance) SetStatusConditionCopyJobSuccessCreated() {
+	condition := i.NewStatusCondition(
+		OdooInstanceStatusConditionTypeCreated,
+		corev1.ConditionTrue,
+		"CopyJobCreation",
+		"The database instance has been sucessfully created by a copier Job.")
+	i.SetStatusCondition(*condition)
+}
+
+// initializer:
+func (i *OdooInstance) SetStatusConditionInitJobCreationCreated() {
+	condition := i.NewStatusCondition(
+		OdooInstanceStatusConditionTypeCreated,
+		corev1.ConditionFalse,
+		"InitJobCreation",
+		"An initializer Job has been launched to copy and initialize this database instance.")
+	i.SetStatusCondition(*condition)
+}
+func (i *OdooInstance) SetStatusConditionInitJobSuccessCreated() {
+	condition := i.NewStatusCondition(
+		OdooInstanceStatusConditionTypeCreated,
+		corev1.ConditionTrue,
+		"InitJobSuccess",
+		"The database instance has been sucessfully created by an initializer Job.")
+	i.SetStatusCondition(*condition)
+}
+
+// sync-migrator:
+func (i *OdooInstance) SetStatusConditionSynchronousMigratorJobCreationMigrated() {
+	condition := i.NewStatusCondition(
+		OdooInstanceStatusConditionTypeMigrated,
+		corev1.ConditionFalse,
+		"SynchronousMigratorJobCreation",
+		"A synchronous migrator Job has been launched to migrate this database instance.")
+	i.SetStatusCondition(*condition)
+}
+func (i *OdooInstance) SetStatusConditionSynchronousMigratorJobSuccessMigrated() {
+	condition := i.NewStatusCondition(
+		OdooInstanceStatusConditionTypeMigrated,
+		corev1.ConditionTrue,
+		"SynchronousMigratorJobSuccess",
+		"The database instance has been sucessfully migrated by a synchronous migrator Job.")
+	i.SetStatusCondition(*condition)
+}

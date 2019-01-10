@@ -46,7 +46,6 @@ import (
 
 	// clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
 	instancev1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/instance/v1beta1"
-	odooinstanceutils "github.com/xoe-labs/odoo-operator/pkg/controller/odooinstance/utils"
 )
 
 type ingressComponent struct {
@@ -68,12 +67,12 @@ func (_ *ingressComponent) WatchTypes() []runtime.Object {
 
 func (_ *ingressComponent) IsReconcilable(ctx *components.ComponentContext) bool {
 	instance := ctx.Top.(*instancev1beta1.OdooInstance)
-	createdCondition := odooinstanceutils.GetOdooInstanceStatusCondition(instance.Status, instancev1beta1.OdooInstanceStatusConditionTypeCreated)
+	createdCondition := instance.GetStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated)
 	if createdCondition.Status != corev1.ConditionTrue {
 		// The instance is not created, yet
 		return false
 	}
-	migratedCondition := odooinstanceutils.GetOdooInstanceStatusCondition(instance.Status, instancev1beta1.OdooInstanceStatusConditionTypeMigrated)
+	migratedCondition := instance.GetStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeMigrated)
 	if migratedCondition != nil && migratedCondition.Status != corev1.ConditionTrue {
 		// The instance migration has not terminated, yet
 		return false
@@ -93,12 +92,6 @@ func (comp *ingressComponent) Reconcile(ctx *components.ComponentContext) (recon
 	err = ctx.Get(ctx.Context, types.NamespacedName{Name: job.Name, Namespace: job.Namespace}, existing)
 	if err != nil && errors.IsNotFound(err) {
 		glog.Infof("[%s/%s] copier: Creating copier Job %s/%s\n", instance.Namespace, instance.Name, job.Namespace, job.Name)
-
-		// Setting the creating condition
-		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
-			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "CopyJobCreation",
-			"A copier Job has been launched to copy and initialize this database instance.")
-		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
 
 		// Launching the job
 		err = controllerutil.SetControllerReference(instance, job, ctx.Scheme)
@@ -123,10 +116,6 @@ func (comp *ingressComponent) Reconcile(ctx *components.ComponentContext) (recon
 		// Success! Update the corresponding OdooInstanceStatusCondition and delete the job.
 
 		glog.Infof("[%s/%s] copier: Copier Job succeeded, setting OdooInstanceStatusCondition \"Created\" to 'true'\n", instance.Namespace, instance.Name)
-		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
-			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionTrue, "CopyJobSuccess",
-			"The database instance has been sucessfully created by a copier Job.")
-		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
 
 		glog.V(2).Infof("[%s/%s] copier: Deleting copier Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
 		err = ctx.Delete(ctx.Context, existing, client.PropagationPolicy(metav1.DeletePropagationBackground))

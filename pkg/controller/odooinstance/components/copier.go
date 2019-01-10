@@ -35,7 +35,6 @@ import (
 
 	"github.com/blaggacao/ridecell-operator/pkg/components"
 	batchv1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -103,10 +102,7 @@ func (comp *copierComponent) Reconcile(ctx *components.ComponentContext) (reconc
 	if err != nil && errors.IsNotFound(err) {
 		glog.Infof("[%s/%s] copier: Creating copier Job %s/%s\n", instance.Namespace, instance.Name, job.Namespace, job.Name)
 
-		// Setting the creating condition
-		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "CopyJobCreation",
-			"A copier Job has been launched to copy and initialize this database instance.")
-		instance.SetStatusCondition(*condition)
+		instance.SetStatusConditionCopyJobCreationCreated()
 
 		// Launching the job
 		err = controllerutil.SetControllerReference(instance, job, ctx.Scheme)
@@ -131,9 +127,8 @@ func (comp *copierComponent) Reconcile(ctx *components.ComponentContext) (reconc
 		// Success! Update the corresponding OdooInstanceStatusCondition and delete the job.
 
 		glog.Infof("[%s/%s] copier: Copier Job succeeded, setting OdooInstanceStatusCondition \"Created\" to 'true'\n", instance.Namespace, instance.Name)
-		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionTrue, "CopyJobSuccess",
-			"The database instance has been sucessfully created by a copier Job.")
-		instance.SetStatusCondition(*condition)
+
+		instance.SetStatusConditionCopyJobSuccessCreated()
 
 		glog.V(2).Infof("[%s/%s] copier: Deleting copier Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
 		err = ctx.Delete(ctx.Context, existing, client.PropagationPolicy(metav1.DeletePropagationBackground))

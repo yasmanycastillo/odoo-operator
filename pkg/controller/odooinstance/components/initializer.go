@@ -35,7 +35,6 @@ import (
 
 	"github.com/blaggacao/ridecell-operator/pkg/components"
 	batchv1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -90,10 +89,7 @@ func (comp *initializerComponent) Reconcile(ctx *components.ComponentContext) (r
 	if err != nil && errors.IsNotFound(err) {
 		glog.Infof("[%s/%s] initializer: Creating initializer Job %s/%s\n", instance.Namespace, instance.Name, job.Namespace, job.Name)
 
-		// Setting the creating condition
-		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "InitJobCreation",
-			"An initializer Job has been launched to create and initialize this database instance.")
-		instance.SetStatusCondition(*condition)
+		instance.SetStatusConditionInitJobCreationCreated()
 
 		// Launching the job
 		err = controllerutil.SetControllerReference(instance, job, ctx.Scheme)
@@ -118,9 +114,8 @@ func (comp *initializerComponent) Reconcile(ctx *components.ComponentContext) (r
 		// Success! Update the corresponding OdooInstanceStatusCondition and delete the job.
 
 		glog.Infof("[%s/%s] initializer: Initializer Job succeeded, setting OdooInstanceStatusCondition \"Created\" to 'true'\n", instance.Namespace, instance.Name)
-		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionTrue, "InitJobSuccess",
-			"The database instance has been sucessfully created by an initializer Job.")
-		instance.SetStatusCondition(*condition)
+
+		instance.SetStatusConditionInitJobSuccessCreated()
 
 		glog.V(2).Infof("[%s/%s] initializer: Deleting initializer Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
 		err = ctx.Delete(ctx.Context, existing, client.PropagationPolicy(metav1.DeletePropagationBackground))

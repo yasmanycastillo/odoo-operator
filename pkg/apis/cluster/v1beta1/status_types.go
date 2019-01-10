@@ -30,6 +30,10 @@
 
 package v1beta1
 
+import (
+	corev1 "k8s.io/api/core/v1"
+)
+
 // OdooClusterStatusConditionType ...
 type OdooClusterStatusConditionType string
 
@@ -45,6 +49,42 @@ const (
 	// OdooClusterStatusConditionTypeErrored ...
 	OdooClusterStatusConditionTypeErrored OdooClusterStatusConditionType = "Errored"
 )
+
+func (c *OdooCluster) SetStatusConditionOperatorNamespaceErrored() {
+	condition := c.NewStatusCondition(
+		OdooClusterStatusConditionTypeErrored,
+		corev1.ConditionTrue,
+		"OperatorNamespace",
+		"The operator namespace is not accesible for secrets loaning.")
+	c.SetStatusCondition(*condition)
+}
+
+func (c *OdooCluster) SetStatusConditionSecretLoaningNotFoundErrored() {
+	condition := c.NewStatusCondition(
+		OdooClusterStatusConditionTypeErrored,
+		corev1.ConditionTrue,
+		"SecretLoaningNotFound",
+		"The app secret was not found in the operator namespace for loaning.")
+	c.SetStatusCondition(*condition)
+}
+
+func (c *OdooCluster) SetStatusConditionSecretLoaningAdminPasswdNotFoundErrored() {
+	condition := c.NewStatusCondition(
+		OdooClusterStatusConditionTypeErrored,
+		corev1.ConditionTrue,
+		"SecretLoaningAdminPasswdNotFound",
+		"The app secret did not contain the expected `adminpasswd` key for loaning.")
+	c.SetStatusCondition(*condition)
+}
+
+func (c *OdooCluster) SetStatusConditionSecretLoaningSuccessAppSecretLoaned() {
+	condition := c.NewStatusCondition(
+		OdooClusterStatusConditionTypeAppSecretLoaned,
+		corev1.ConditionTrue,
+		"LoaningSuccess",
+		"The app secret has been loaned from the operator namespace.")
+	c.SetStatusCondition(*condition)
+}
 
 // OdooVersionStatusConditionType ...
 type OdooVersionStatusConditionType string

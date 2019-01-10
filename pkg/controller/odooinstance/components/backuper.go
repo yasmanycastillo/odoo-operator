@@ -35,7 +35,6 @@ import (
 
 	"github.com/blaggacao/ridecell-operator/pkg/components"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -101,11 +100,7 @@ func (comp *backuperComponent) Reconcile(ctx *components.ComponentContext) (reco
 	if err != nil && errors.IsNotFound(err) {
 		glog.Infof("[%s/%s] copier: Creating copier Job %s/%s\n", instance.Namespace, instance.Name, cronjob.Namespace, cronjob.Name)
 
-		// Setting the creating condition
-		condition := instance.NewStatusCondition(
-			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "CopyJobCreation",
-			"A copier Job has been launched to copy and initialize this database instance.")
-		instance.SetStatusCondition(*condition)
+		instance.SetStatusConditionBackupCronJobSecheduleBackuped()
 
 		// Creating the cronjob
 		err = controllerutil.SetControllerReference(instance, cronjob, ctx.Scheme)

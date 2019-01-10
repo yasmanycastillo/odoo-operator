@@ -104,10 +104,7 @@ func (comp *synchMigratorComponent) Reconcile(ctx *components.ComponentContext) 
 	if err != nil && errors.IsNotFound(err) {
 		glog.Infof("[%s/%s] sync-migrator: Creating synchronous migrator Job %s/%s\n", instance.Namespace, instance.Name, job.Namespace, job.Name)
 
-		// Setting the creating condition
-		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeMigrated, corev1.ConditionFalse, "SynchronousMigratorJobCreation",
-			"A synchronous migrator Job has been launched to migrate this database instance.")
-		instance.SetStatusCondition(*condition)
+		instance.SetStatusConditionSynchronousMigratorJobCreationMigrated()
 
 		// Launching the job
 		err = controllerutil.SetControllerReference(instance, job, ctx.Scheme)
@@ -132,9 +129,8 @@ func (comp *synchMigratorComponent) Reconcile(ctx *components.ComponentContext) 
 		// Success! Update the corresponding OdooInstanceStatusCondition and delete the job.
 
 		glog.Infof("[%s/%s] sync-migrator: Synchronous migrator Job succeeded, setting OdooInstanceStatusCondition \"Migrated\" to 'true'\n", instance.Namespace, instance.Name)
-		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeMigrated, corev1.ConditionTrue, "SynchronousMigratorJobSuccess",
-			"The database instance has been sucessfully migrated by a synchronous migrator Job.")
-		instance.SetStatusCondition(*condition)
+
+		instance.SetStatusConditionSynchronousMigratorJobSuccessMigrated()
 
 		glog.V(2).Infof("[%s/%s] sync-migrator: Deleting synchronous migrator Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
 		err = ctx.Delete(ctx.Context, existing, client.PropagationPolicy(metav1.DeletePropagationBackground))

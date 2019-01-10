@@ -80,11 +80,7 @@ func (comp *appSecretComponent) Reconcile(ctx *components.ComponentContext) (rec
 			var err error
 			operatorNamespace, err = getInClusterNamespace()
 			if err != nil {
-				// Setting the error condition
-				condition := instance.NewStatusCondition(
-					clusterv1beta1.OdooClusterStatusConditionTypeErrored, corev1.ConditionFalse, "OperatorNamespace",
-					"The operator namespace is not accesible for secrets loaning.")
-				instance.SetStatusCondition(*condition)
+				instance.SetStatusConditionOperatorNamespaceErrored()
 				return reconcile.Result{}, err
 			}
 		}
@@ -92,11 +88,7 @@ func (comp *appSecretComponent) Reconcile(ctx *components.ComponentContext) (rec
 		err := ctx.Get(ctx.Context, types.NamespacedName{Name: instance.Spec.AppSecret, Namespace: operatorNamespace}, upstream)
 		if err != nil {
 			if errors.IsNotFound(err) {
-				// Setting the error condition
-				condition := instance.NewStatusCondition(
-					clusterv1beta1.OdooClusterStatusConditionTypeErrored, corev1.ConditionFalse, "SecretLoaningNotFound",
-					"The app secret was not found in the operator namespace for loaning.")
-				instance.SetStatusCondition(*condition)
+				instance.SetStatusConditionSecretLoaningNotFoundErrored()
 			}
 			return reconcile.Result{Requeue: true}, err
 		}
@@ -111,19 +103,11 @@ func (comp *appSecretComponent) Reconcile(ctx *components.ComponentContext) (rec
 		if upstream != nil {
 			_, ok := upstream.Data["adminpasswd"]
 			if !ok {
-				// Setting the error condition
-				condition := instance.NewStatusCondition(
-					clusterv1beta1.OdooClusterStatusConditionTypeErrored, corev1.ConditionFalse, "SecretLoaningAdminPasswdNotFound",
-					"The app secret did not contain the expected `adminpasswd` key for loaning.")
-				instance.SetStatusCondition(*condition)
+				instance.SetStatusConditionSecretLoaningAdminPasswdNotFoundErrored()
 				return fmt.Errorf("app secret loaning failed: expected key not found")
 			}
 			existing.Data["adminpasswd"] = upstream.Data["adminpasswd"]
-			// Setting the AppSecretLoaned condition
-			condition := instance.NewStatusCondition(
-				clusterv1beta1.OdooClusterStatusConditionTypeAppSecretLoaned, corev1.ConditionTrue, "LoaningSuccess",
-				"The app secret has been loaned from the operator namespace.")
-			instance.SetStatusCondition(*condition)
+			instance.SetStatusConditionSecretLoaningSuccessAppSecretLoaned()
 		}
 		existing.Type = goal.Type
 		return nil
