@@ -2,6 +2,7 @@ apiVersion: instance.odoo.io/v1beta1
 kind: OdooInstanceList
 items:
 - spec:
+    cluster: "odoo-operator-odoocluster-sample"
     hostname: honolulu.example.com
     version: "0.0.1"
     initModules:

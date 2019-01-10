@@ -1,5 +1,5 @@
-{{ define "componentName" }}proxy{{ end }}
-{{ define "componentType" }}loadbalancer{{ end }}
+{{ define "componentName" }}lb/l7router{{ end }}
+{{ define "componentType" }}networking{{ end }}
 
 apiVersion: extensions/v1beta1
 kind: Ingress

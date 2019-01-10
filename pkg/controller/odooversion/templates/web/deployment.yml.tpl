@@ -1,5 +1,5 @@
 {{ define "componentName" }}web{{ end }}
-{{ define "componentType" }}odoo{{ end }}
+{{ define "componentType" }}app{{ end }}
 
 {{ define "deploymentArgs" }}["--config", "/run/configs/odoo/", "--db_maxconn=16", "--workers=0", "--max-cron-threads=0"]{{ end }}
 {{ define "deploymentPorts" }}[{name: server-port, containerPort: 8069, protocol: TCP}]{{ end }}

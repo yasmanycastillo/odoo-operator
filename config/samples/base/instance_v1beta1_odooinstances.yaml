@@ -6,6 +6,7 @@ metadata:
   name: odooinstancelist-sample
 items:
 - spec:
+    cluster: "odoocluster-sample"
     hostname: honolulu.example.com
     version: "0.0.1"
     initModules:
@@ -18,6 +19,7 @@ items:
 # In case of migration/copying -> init* adopt additional* semantics
 # Migrations are triggered on version bumps
 - spec:
+    cluster: "odoocluster-sample"
     parentHostname: honolulu.example.com  # will be copied
     hostname: testing.honolulu.example.com
     demo: true  # Initialize demo mode
@@ -26,6 +28,7 @@ items:
     initSQL: |
       UPDATE res_company SET name="Petshop in Testing mode" WHERE id=1;
 - spec:
+    cluster: "odoocluster-sample"
     parentHostname: honolulu.example.com   # will be copied ...
     hostname: testmigration.honolulu.example.com
     version: "0.1.0"  # ... and migrated

@@ -65,15 +65,17 @@ type OdooClusterSpec struct {
 
 // OdooTrackSpec defines the desired state of OdooTrack
 type OdooTrackSpec struct {
-	Name OdooTracknameType `json:"name"`
+	Track   OdooTracknameType `json:"track"`
+	Cluster string            `json:"cluster"`
 	// +optional
 	Config map[string]ConfigValue `json:"config,omitempty"`
 }
 
 // OdooVersionSpec defines the desired state of OdooVersion
 type OdooVersionSpec struct {
-	Version string            `json:"name"`
+	Version string            `json:"version"`
 	Track   OdooTracknameType `json:"track"`
+	Cluster string            `json:"cluster"`
 	Bugfix  bool              `json:"bugfix"`
 	// +optional
 	Config map[string]ConfigValue `json:"config,omitempty"`

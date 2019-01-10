@@ -1,5 +1,5 @@
 {{ define "componentName" }}longpolling{{ end }}
-{{ define "componentType" }}odoo{{ end }}
+{{ define "componentType" }}app{{ end }}
 
 {{ define "deploymentArgs" }}["gevent", "--config", "/run/configs/odoo/", "--db_maxconn=16"]{{ end }}
 {{ define "deploymentPorts" }}[{name: longpolling-port, containerPort: 8072, protocol: TCP}]{{ end }}

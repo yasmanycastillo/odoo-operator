@@ -32,6 +32,7 @@ package v1beta1
 
 // OdooInstanceSpec defines the desired state of OdooInstance
 type OdooInstanceSpec struct {
+	Cluster string `json:"cluster"`
 	// The host name of this instance (mutable)
 	Hostname string `json:"hostname"`
 	// The version of this instance (immutable)

@@ -1,4 +1,4 @@
-{{ define "componentName" }}dbnamespace{{ end }}
+{{ define "componentName" }}namespace{{ end }}
 {{ define "componentType" }}database{{ end }}
 
 apiVersion: cluster.odoo.io/v1beta1

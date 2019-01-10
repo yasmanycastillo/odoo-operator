@@ -1,5 +1,5 @@
 {{ define "componentName" }}config{{ end }}
-{{ define "componentType" }}odoo{{ end }}
+{{ define "componentType" }}app{{ end }}
 apiVersion: v1
 kind: ConfigMap
 {{ template "metadata" . }}
