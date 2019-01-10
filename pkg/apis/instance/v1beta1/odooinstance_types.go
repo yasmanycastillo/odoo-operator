@@ -31,25 +31,8 @@
 package v1beta1
 
 import (
-	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-// OdooInstanceSpec defines the desired state of OdooInstance
-type OdooInstanceSpec struct {
-	// The host name of this instance (mutable)
-	Hostname string `json:"hostname"`
-	// The version of this instance (immutable)
-	Version string `json:"version"`
-	// +optional
-	ParentHostname *string `json:"parentHostname"`
-	// +optional
-	Demo *bool `json:"demo"`
-	// +optional
-	InitModules []string `json:"initModules"`
-	// +optional
-	InitSQL string `json:"initSQL"`
-}
 
 // OdooInstanceStatus defines the observed state of OdooInstance
 type OdooInstanceStatus struct {
@@ -64,32 +47,8 @@ type OdooInstanceStatus struct {
 type OdooInstanceStatusCondition struct {
 	// Type of the OdooInstanceStatus condition.
 	Type OdooInstanceStatusConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=OdooInstanceStatusConditionType"`
-	// Status of the condition, one of True, False, Unknown.
-	Status v1.ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
-	// The last time the condition transitioned from one status to another.
-	// +optional
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,3,opt,name=lastTransitionTime"`
-	// The reason for the condition's last transition.
-	// +optional
-	Reason string `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
-	// A human readable message indicating details about the transition.
-	// +optional
-	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
+	StatusCondition
 }
-
-// OdooInstanceStatusConditionType ...
-type OdooInstanceStatusConditionType string
-
-const (
-	// OdooInstanceStatusConditionTypeCreated ...
-	OdooInstanceStatusConditionTypeCreated OdooInstanceStatusConditionType = "Created"
-	// OdooInstanceStatusConditionTypeMigrated ...
-	OdooInstanceStatusConditionTypeMigrated OdooInstanceStatusConditionType = "Migrated"
-	// OdooInstanceStatusConditionTypeReconciled ...
-	OdooInstanceStatusConditionTypeReconciled OdooInstanceStatusConditionType = "Reconciled"
-	// OdooInstanceStatusConditionTypeMaintaining ...
-	OdooInstanceStatusConditionTypeMaintaining OdooInstanceStatusConditionType = "Maintaining"
-)
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

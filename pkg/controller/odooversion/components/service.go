@@ -57,6 +57,8 @@ func NewIngress(templatePath string) *ingressComponent {
 	return &ingressComponent{templatePath: templatePath}
 }
 
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
 func (_ *ingressComponent) WatchTypes() []runtime.Object {
 	return []runtime.Object{
 		// Todo own OdooInstances by the cluster on creation

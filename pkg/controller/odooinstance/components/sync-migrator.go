@@ -45,7 +45,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	instancev1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/instance/v1beta1"
-	odooinstanceutils "github.com/xoe-labs/odoo-operator/pkg/controller/odooinstance/utils"
 )
 
 type synchMigratorComponent struct {
@@ -56,6 +55,8 @@ func NewSyncMigrator(templatePath string) *synchMigratorComponent {
 	return &synchMigratorComponent{templatePath: templatePath}
 }
 
+// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=jobs/status,verbs=get;update;patch
 func (_ *synchMigratorComponent) WatchTypes() []runtime.Object {
 	return []runtime.Object{
 		&batchv1.Job{},
@@ -68,7 +69,7 @@ func (_ *synchMigratorComponent) IsReconcilable(ctx *components.ComponentContext
 		// The migrator component is never interfering to initialize a root instance
 		return false
 	}
-	createdCondition := odooinstanceutils.GetOdooInstanceStatusCondition(instance.Status, instancev1beta1.OdooInstanceStatusConditionTypeCreated)
+	createdCondition := instance.GetStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated)
 	if createdCondition.Status != corev1.ConditionTrue {
 		// Apply migrations only on created instances
 		return false
@@ -104,10 +105,9 @@ func (comp *synchMigratorComponent) Reconcile(ctx *components.ComponentContext) 
 		glog.Infof("[%s/%s] sync-migrator: Creating synchronous migrator Job %s/%s\n", instance.Namespace, instance.Name, job.Namespace, job.Name)
 
 		// Setting the creating condition
-		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
-			instancev1beta1.OdooInstanceStatusConditionTypeMigrated, corev1.ConditionFalse, "SynchronousMigratorJobCreation",
+		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeMigrated, corev1.ConditionFalse, "SynchronousMigratorJobCreation",
 			"A synchronous migrator Job has been launched to migrate this database instance.")
-		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
+		instance.SetStatusCondition(*condition)
 
 		// Launching the job
 		err = controllerutil.SetControllerReference(instance, job, ctx.Scheme)
@@ -132,10 +132,9 @@ func (comp *synchMigratorComponent) Reconcile(ctx *components.ComponentContext) 
 		// Success! Update the corresponding OdooInstanceStatusCondition and delete the job.
 
 		glog.Infof("[%s/%s] sync-migrator: Synchronous migrator Job succeeded, setting OdooInstanceStatusCondition \"Migrated\" to 'true'\n", instance.Namespace, instance.Name)
-		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
-			instancev1beta1.OdooInstanceStatusConditionTypeMigrated, corev1.ConditionTrue, "SynchronousMigratorJobSuccess",
+		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeMigrated, corev1.ConditionTrue, "SynchronousMigratorJobSuccess",
 			"The database instance has been sucessfully migrated by a synchronous migrator Job.")
-		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
+		instance.SetStatusCondition(*condition)
 
 		glog.V(2).Infof("[%s/%s] sync-migrator: Deleting synchronous migrator Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
 		err = ctx.Delete(ctx.Context, existing, client.PropagationPolicy(metav1.DeletePropagationBackground))

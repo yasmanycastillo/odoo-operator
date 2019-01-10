@@ -35,27 +35,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// OdooClusterSpec defines the desired state of OdooCluster
-type OdooClusterSpec struct {
-	Tracks   []OdooTrackSpec        `json:"tracks"`
-	Image    OdooImageRepoSpec      `json:"image"`
-	Database DBNamespaceSpec        `json:"database"`
-	Config   map[string]ConfigValue `json:"config"`
-	// +optional
-	AppSecret string `json:"appsecret,omitempty"`
-	// +optional
-	Resources OdooResource `json:"resources,omitempty"`
-	// +optional
-	NodeSelector *v1.NodeSelector `json:"nodes,omitempty"`
-
-	// MailServer  bool `json:"mailServer"`
-	// OnlyOffice  bool `json:"onlyOffice"`
-	// Mattermost  bool `json:"mattermost"`
-	// Nuxeo       bool `json:"nuxeo"`
-	// BpmnEngine  bool `json:"bpmnEngine"`
-	// OpenProject bool `json:"openProject"`
-}
-
 // OdooImageRepoSpec defines the cluster-level image configuration
 type OdooImageRepoSpec struct {
 	Registry string `json:"registry"`
@@ -100,34 +79,8 @@ type OdooClusterStatus struct {
 type OdooClusterStatusCondition struct {
 	// Type of the OdooClusterStatus condition.
 	Type OdooClusterStatusConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=OdooClusterStatusConditionType"`
-	// Status of the condition, one of True, False, Unknown.
-	Status v1.ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
-	// The last time the condition transitioned from one status to another.
-	// +optional
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,3,opt,name=lastTransitionTime"`
-	// The reason for the condition's last transition.
-	// +optional
-	Reason string `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
-	// A human readable message indicating details about the transition.
-	// +optional
-	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
+	StatusCondition
 }
-
-// OdooClusterStatusConditionType ...
-type OdooClusterStatusConditionType string
-
-const (
-	// OdooClusterStatusConditionTypeCreated ...
-	OdooClusterStatusConditionTypeCreated OdooClusterStatusConditionType = "Created"
-	// OdooClusterStatusConditionTypeReconciled ...
-	OdooClusterStatusConditionTypeReconciled OdooClusterStatusConditionType = "Reconciled"
-	// OdooClusterStatusConditionTypeAppSecretLoaned ...
-	OdooClusterStatusConditionTypeAppSecretLoaned OdooClusterStatusConditionType = "AppSecretLoaned"
-	// OdooClusterStatusConditionTypePullSecretLoaned ...
-	OdooClusterStatusConditionTypePullSecretLoaned OdooClusterStatusConditionType = "PullSecretLoaned"
-	// OdooClusterStatusConditionTypeErrored ...
-	OdooClusterStatusConditionTypeErrored OdooClusterStatusConditionType = "Errored"
-)
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

@@ -43,16 +43,6 @@ func (v *ConfigValue) UnmarshalJSON(data []byte) error {
 	if ok {
 		return nil
 	}
-	// It was something else, hopefully a JSON object.
-	sectionVal, ok := tmp.(map[string]interface{})
-	if ok {
-		for k, tmp := range sectionVal {
-			val := &ConfigValue{}
-			val.unmarshalValue(tmp)
-			v.Section[k] = *val
-		}
-
-	}
 	return errors.New("error decoding JSON")
 }
 
@@ -77,6 +67,18 @@ func (v *ConfigValue) unmarshalValue(tmp interface{}) bool {
 	if ok {
 		v.String = &stringVal
 		return true
+	}
+	// It was something else, hopefully a JSON object.
+	sectionVal, ok := tmp.(map[string]interface{})
+	if ok {
+		v.Section = map[string]ConfigValue{}
+		for k, tmp := range sectionVal {
+			val := &ConfigValue{}
+			val.unmarshalValue(tmp)
+			v.Section[k] = *val
+		}
+		return true
+
 	}
 	return false
 }

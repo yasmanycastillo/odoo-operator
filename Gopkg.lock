@@ -19,11 +19,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dda47209fb1159609f678a20e66e5f10923a2790826b779cb17410ed35b252af"
+  digest = "1:0f0801e19a482b9d2de23e404e97b664f92f0a75c9565f361c9c3ca5fac1daea"
   name = "github.com/blaggacao/ridecell-operator"
   packages = ["pkg/components"]
   pruneopts = "T"
-  revision = "25417da41909db96155fbc53ec26b704339398be"
+  revision = "dfa90f575042253fb0677a37ceb9d41a8a0a0729"
 
 [[projects]]
   digest = "1:9f42202ac457c462ad8bb9642806d275af9ab4850cf0b1960b9c6f083d4a309a"
@@ -901,7 +901,9 @@
     "gopkg.in/ini.v1",
     "k8s.io/api/apps/v1",
     "k8s.io/api/batch/v1",
+    "k8s.io/api/batch/v1beta1",
     "k8s.io/api/core/v1",
+    "k8s.io/api/extensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
@@ -919,8 +921,10 @@
     "sigs.k8s.io/controller-runtime/pkg/controller",
     "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil",
     "sigs.k8s.io/controller-runtime/pkg/envtest",
+    "sigs.k8s.io/controller-runtime/pkg/event",
     "sigs.k8s.io/controller-runtime/pkg/handler",
     "sigs.k8s.io/controller-runtime/pkg/manager",
+    "sigs.k8s.io/controller-runtime/pkg/predicate",
     "sigs.k8s.io/controller-runtime/pkg/reconcile",
     "sigs.k8s.io/controller-runtime/pkg/runtime/log",
     "sigs.k8s.io/controller-runtime/pkg/runtime/scheme",

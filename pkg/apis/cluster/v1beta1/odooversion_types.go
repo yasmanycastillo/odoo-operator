@@ -31,18 +31,8 @@
 package v1beta1
 
 import (
-	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-// OdooVersionSpec defines the desired state of OdooVersion
-type OdooVersionSpec struct {
-	Version string            `json:"name"`
-	Track   OdooTracknameType `json:"track"`
-	Bugfix  bool              `json:"bugfix"`
-	// +optional
-	Config map[string]ConfigValue `json:"config,omitempty"`
-}
 
 // OdooVersionStatus defines the observed state of OdooVersion
 type OdooVersionStatus struct {
@@ -57,30 +47,8 @@ type OdooVersionStatus struct {
 type OdooVersionStatusCondition struct {
 	// Type of the OdooVersionStatus condition.
 	Type OdooVersionStatusConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=OdooVersionStatusConditionType"`
-	// Status of the condition, one of True, False, Unknown.
-	Status v1.ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
-	// The last time the condition transitioned from one status to another.
-	// +optional
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,3,opt,name=lastTransitionTime"`
-	// The reason for the condition's last transition.
-	// +optional
-	Reason string `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
-	// A human readable message indicating details about the transition.
-	// +optional
-	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
+	StatusCondition
 }
-
-// OdooVersionStatusConditionType ...
-type OdooVersionStatusConditionType string
-
-const (
-	// OdooVersionStatusConditionTypeDeployed ...
-	OdooVersionStatusConditionTypeDeployed OdooVersionStatusConditionType = "Deployed"
-	// OdooVersionStatusConditionTypeApplied ...
-	OdooVersionStatusConditionTypeApplied OdooVersionStatusConditionType = "Applied"
-	// OdooVersionStatusConditionTypeReconciled ...
-	OdooVersionStatusConditionTypeReconciled OdooVersionStatusConditionType = "Reconciled"
-)
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

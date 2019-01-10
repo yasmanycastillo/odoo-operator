@@ -51,6 +51,8 @@ func NewConfigMap(templatePath string) *configmapComponent {
 	return &configmapComponent{templatePath: templatePath}
 }
 
+// +kubebuilder:rbac:groups=,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=,resources=configmaps/status,verbs=get;update;patch
 func (_ *configmapComponent) WatchTypes() []runtime.Object {
 	return []runtime.Object{
 		&corev1.ConfigMap{},

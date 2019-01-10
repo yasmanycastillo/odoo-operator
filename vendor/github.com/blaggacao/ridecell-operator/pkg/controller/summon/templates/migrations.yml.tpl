@@ -31,7 +31,9 @@ spec:
         command:
         - sh
         - "-c"
-        - python manage.py migrate
+        - |
+          sed "s/xxPGPASSWORDxx/$(cat /postgres-credentials/password)/" </etc/secrets-orig/summon-platform.yml >/etc/secrets/summon-platform.yml && \
+          python manage.py migrate
         resources:
           requests:
             memory: 512M
@@ -44,7 +46,7 @@ spec:
           mountPath: /etc/config
         - name: secrets-orig
           mountPath: /etc/secrets-orig
-        - name: app-secrets
+        - name: secrets-shared
           mountPath: /etc/secrets
         - name: postgres-credentials
           mountPath: /postgres-credentials
@@ -56,9 +58,8 @@ spec:
         - name: secrets-orig
           secret:
             secretName: {{ .Instance.Spec.Secret }}
-        - name: app-secrets
-          secret:
-            secretName: summon.{{ .Instance.Name }}.app-secrets
+        - name: secrets-shared
+          emptyDir: {}
         - name: postgres-credentials
           secret:
             secretName: summon.{{ .Instance.Name }}-database.credentials

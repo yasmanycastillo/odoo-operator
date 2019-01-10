@@ -26,9 +26,6 @@ spec:
           properties:
             config:
               type: object
-            fernetKeyLifetime:
-              format: int64
-              type: integer
             hostname:
               type: string
             pullSecret:

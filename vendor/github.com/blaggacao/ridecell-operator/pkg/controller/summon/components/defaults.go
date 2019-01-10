@@ -18,7 +18,6 @@ package components
 
 import (
 	"fmt"
-	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -26,11 +25,6 @@ import (
 	summonv1beta1 "github.com/Ridecell/ridecell-operator/pkg/apis/summon/v1beta1"
 	"github.com/Ridecell/ridecell-operator/pkg/components"
 )
-
-const defaultFernetKeysLifespan = "8760h"
-
-// Treat this as a const, no touchy.
-var zeroSeconds time.Duration
 
 var configDefaults map[string]summonv1beta1.ConfigValue
 
@@ -56,6 +50,9 @@ func (comp *defaultsComponent) Reconcile(ctx *components.ComponentContext) (reco
 	if instance.Spec.Hostname == "" {
 		instance.Spec.Hostname = instance.Name + ".ridecell.us"
 	}
+	if instance.Spec.PullSecret == "" {
+		instance.Spec.PullSecret = "pull-secret"
+	}
 	defaultReplicas := int32(1)
 	if instance.Spec.WebReplicas == nil {
 		instance.Spec.WebReplicas = &defaultReplicas
@@ -71,14 +68,6 @@ func (comp *defaultsComponent) Reconcile(ctx *components.ComponentContext) (reco
 	}
 	if instance.Spec.StaticReplicas == nil {
 		instance.Spec.StaticReplicas = &defaultReplicas
-	}
-	if instance.Spec.PullSecret == "" {
-		instance.Spec.PullSecret = "pull-secret"
-	}
-	if instance.Spec.FernetKeyLifetime == zeroSeconds {
-		// This is set to rotate fernet keys every year.
-		parsedTimeDuration, _ := time.ParseDuration(defaultFernetKeysLifespan)
-		instance.Spec.FernetKeyLifetime = parsedTimeDuration
 	}
 
 	// Fill in static default config values.

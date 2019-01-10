@@ -34,13 +34,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// OdooTrackSpec defines the desired state of OdooTrack
-type OdooTrackSpec struct {
-	Name OdooTracknameType `json:"name"`
-	// +optional
-	Config map[string]ConfigValue `json:"config,omitempty"`
-}
-
 // OdooTracknameType can be one of the supported tracks
 type OdooTracknameType string
 

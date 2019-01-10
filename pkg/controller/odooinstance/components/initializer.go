@@ -46,7 +46,6 @@ import (
 
 	// clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
 	instancev1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/instance/v1beta1"
-	odooinstanceutils "github.com/xoe-labs/odoo-operator/pkg/controller/odooinstance/utils"
 )
 
 type initializerComponent struct {
@@ -57,6 +56,8 @@ func NewInitializer(templatePath string) *initializerComponent {
 	return &initializerComponent{templatePath: templatePath}
 }
 
+// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=jobs/status,verbs=get;update;patch
 func (comp *initializerComponent) WatchTypes() []runtime.Object {
 	return []runtime.Object{
 		&batchv1.Job{},
@@ -69,7 +70,7 @@ func (_ *initializerComponent) IsReconcilable(ctx *components.ComponentContext) 
 		// The copier component is the one that should copy a parent instance
 		return false
 	}
-	if odooinstanceutils.GetOdooInstanceStatusCondition(instance.Status, instancev1beta1.OdooInstanceStatusConditionTypeCreated) != nil {
+	if instance.GetStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated) != nil {
 		// The instance is already created (or creating)
 		return false
 	}
@@ -90,10 +91,9 @@ func (comp *initializerComponent) Reconcile(ctx *components.ComponentContext) (r
 		glog.Infof("[%s/%s] initializer: Creating initializer Job %s/%s\n", instance.Namespace, instance.Name, job.Namespace, job.Name)
 
 		// Setting the creating condition
-		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
-			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "InitJobCreation",
+		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "InitJobCreation",
 			"An initializer Job has been launched to create and initialize this database instance.")
-		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
+		instance.SetStatusCondition(*condition)
 
 		// Launching the job
 		err = controllerutil.SetControllerReference(instance, job, ctx.Scheme)
@@ -118,10 +118,9 @@ func (comp *initializerComponent) Reconcile(ctx *components.ComponentContext) (r
 		// Success! Update the corresponding OdooInstanceStatusCondition and delete the job.
 
 		glog.Infof("[%s/%s] initializer: Initializer Job succeeded, setting OdooInstanceStatusCondition \"Created\" to 'true'\n", instance.Namespace, instance.Name)
-		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
-			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionTrue, "InitJobSuccess",
+		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionTrue, "InitJobSuccess",
 			"The database instance has been sucessfully created by an initializer Job.")
-		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
+		instance.SetStatusCondition(*condition)
 
 		glog.V(2).Infof("[%s/%s] initializer: Deleting initializer Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
 		err = ctx.Delete(ctx.Context, existing, client.PropagationPolicy(metav1.DeletePropagationBackground))

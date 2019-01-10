@@ -35,14 +35,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// DBNamespaceSpec defines the desired state of DBNamespace
-type DBNamespaceSpec struct {
-	User      string             `json:"user"`
-	Password  string             `json:"password"`
-	Admin     DBAdminCredentials `json:"dbAdmin"`
-	UserQuota v1.ResourceList    `json:"userQuota,omitempty"`
-}
-
 // DBAdminCredentials defines the DB admin credentials
 type DBAdminCredentials struct {
 	Host     string `json:"host"`

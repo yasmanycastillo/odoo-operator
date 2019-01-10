@@ -40,12 +40,6 @@ import (
 // Add creates a new OdooVersion Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 //
-// +kubebuilder:rbac:groups=,resources=services,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=,resources=services/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=,resources=configmaps/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=cluster.odoo.io,resources=odooversions,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cluster.odoo.io,resources=odooversions/status,verbs=get;update;patch
 func Add(mgr manager.Manager) error {

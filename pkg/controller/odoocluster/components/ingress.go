@@ -37,7 +37,8 @@ import (
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
@@ -53,17 +54,32 @@ func NewIngress(templatePath string) *ingressComponent {
 	return &ingressComponent{templatePath: templatePath}
 }
 
+// +kubebuilder:rbac:groups=extensions,resources=ingress,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=extensions,resources=ingress/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=instance.odoo.io,resources=odooinstances,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=instance.odoo.io,resources=odooinstances/status,verbs=get;update;patch
 func (_ *ingressComponent) WatchTypes() []runtime.Object {
 	return []runtime.Object{
-		// TODOO own OdooInstances by the cluster on creation
 		&instancev1beta1.OdooInstance{},
+		&extensionsv1beta1.Ingress{},
 	}
 }
 
-func (_ *ingressComponent) IsGatherable(obj handler.MapObject) bool {
-	// Host created status not set
-	// OR: deletion timestamp set
-	return true
+func (_ *ingressComponent) WatchPredicateFuncs() predicate.Funcs {
+	return predicate.Funcs{
+		UpdateFunc: func(_ event.UpdateEvent) bool {
+			return true
+		},
+		CreateFunc: func(_ event.CreateEvent) bool {
+			return true
+		},
+		DeleteFunc: func(_ event.DeleteEvent) bool {
+			return true
+		},
+		GenericFunc: func(_ event.GenericEvent) bool {
+			return false
+		},
+	}
 }
 
 func (_ *ingressComponent) IsReconcilable(ctx *components.ComponentContext) bool {

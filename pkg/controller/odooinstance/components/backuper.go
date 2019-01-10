@@ -44,7 +44,6 @@ import (
 
 	// clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
 	instancev1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/instance/v1beta1"
-	odooinstanceutils "github.com/xoe-labs/odoo-operator/pkg/controller/odooinstance/utils"
 )
 
 type backuperComponent struct {
@@ -55,6 +54,8 @@ func NewBackuper(templatePath string) *backuperComponent {
 	return &backuperComponent{templatePath: templatePath}
 }
 
+// +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=cronjobs/status,verbs=get;update;patch
 func (_ *backuperComponent) WatchTypes() []runtime.Object {
 	return []runtime.Object{
 		&batchv1beta1.CronJob{},
@@ -67,7 +68,7 @@ func (_ *backuperComponent) IsReconcilable(ctx *components.ComponentContext) boo
 		// The initializer component is the one that should initialize a root instance
 		return false
 	}
-	if odooinstanceutils.GetOdooInstanceStatusCondition(instance.Status, instancev1beta1.OdooInstanceStatusConditionTypeCreated) != nil {
+	if instance.GetStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated) != nil {
 		// The instance is already created (or creating)
 		return false
 	}
@@ -101,10 +102,10 @@ func (comp *backuperComponent) Reconcile(ctx *components.ComponentContext) (reco
 		glog.Infof("[%s/%s] copier: Creating copier Job %s/%s\n", instance.Namespace, instance.Name, cronjob.Namespace, cronjob.Name)
 
 		// Setting the creating condition
-		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
+		condition := instance.NewStatusCondition(
 			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "CopyJobCreation",
 			"A copier Job has been launched to copy and initialize this database instance.")
-		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
+		instance.SetStatusCondition(*condition)
 
 		// Creating the cronjob
 		err = controllerutil.SetControllerReference(instance, cronjob, ctx.Scheme)

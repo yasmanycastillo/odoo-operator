@@ -22,8 +22,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -57,7 +57,7 @@ type Component interface {
 // GathererComponent enables the accumulator pattern on Reconciler.
 type GathererComponent interface {
 	Component
-	// IsGatherable determines if a handler.MapObject should trigger a
+	// WatchPredicateFuncs determines if a handler.MapObject should trigger a
 	// reconcile request inferred from Top's metav1.Object interface.
 	//
 	// Note: Reconcile request are limited to those inferrable by Top's
@@ -68,7 +68,7 @@ type GathererComponent interface {
 	// EnqueueRequestsFromMapFunc while implementing a superset of
 	// EnqueueRequestForOwner semantics. You should avoid to reimplement the
 	// latter through this function.
-	IsGatherable(object *handler.MapObject) bool
+	WatchPredicateFuncs() predicate.Funcs
 }
 
 type Status interface{}

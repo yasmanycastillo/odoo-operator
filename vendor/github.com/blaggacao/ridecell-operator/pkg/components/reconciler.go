@@ -82,24 +82,25 @@ func NewReconciler(name string, mgr manager.Manager, top runtime.Object, templat
 				continue
 			}
 			toRequests := func(object handler.MapObject) []reconcile.Request {
-				if gatherer.IsGatherable(&object) {
-					// Pull the metav1.Object out of the runtime.Object
-					metaObj, err := meta.Accessor(top)
-					if err != nil {
-						fmt.Errorf("unable to create watch: %v", err)
-					}
-
-					return []reconcile.Request{{NamespacedName: types.NamespacedName{
+				// Pull the metav1.Object out of the runtime.Object
+				metaObj, err := meta.Accessor(top)
+				if err != nil {
+					fmt.Errorf("unable to create watch: %v", err)
+				}
+				return []reconcile.Request{
+					{NamespacedName: types.NamespacedName{
 						Namespace: metaObj.GetNamespace(),
 						Name:      metaObj.GetName(),
-					}}}
+					}},
 				}
-
-				return []reconcile.Request{}
 			}
-			err = c.Watch(&source.Kind{Type: watchObj}, &handler.EnqueueRequestsFromMapFunc{
-				ToRequests: handler.ToRequestsFunc(toRequests),
-			})
+			err = c.Watch(
+				&source.Kind{Type: watchObj},
+				&handler.EnqueueRequestsFromMapFunc{
+					ToRequests: handler.ToRequestsFunc(toRequests),
+				},
+				gatherer.WatchPredicateFuncs(),
+			)
 			if err != nil {
 				return nil, fmt.Errorf("unable to create watch: %v", err)
 			}

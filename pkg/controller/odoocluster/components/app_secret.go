@@ -44,7 +44,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
-	odooclusterutils "github.com/xoe-labs/odoo-operator/pkg/controller/odoocluster/utils"
 )
 
 const inClusterNamespacePath = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
@@ -57,6 +56,8 @@ func NewAppSecret(templatePath string) *appSecretComponent {
 	return &appSecretComponent{templatePath: templatePath}
 }
 
+// +kubebuilder:rbac:groups=,resources=secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=,resources=secrets/status,verbs=get;update;patch
 func (_ *appSecretComponent) WatchTypes() []runtime.Object {
 	return []runtime.Object{
 		&corev1.Secret{},
@@ -80,10 +81,10 @@ func (comp *appSecretComponent) Reconcile(ctx *components.ComponentContext) (rec
 			operatorNamespace, err = getInClusterNamespace()
 			if err != nil {
 				// Setting the error condition
-				condition := odooclusterutils.NewOdooClusterStatusCondition(
+				condition := instance.NewStatusCondition(
 					clusterv1beta1.OdooClusterStatusConditionTypeErrored, corev1.ConditionFalse, "OperatorNamespace",
 					"The operator namespace is not accesible for secrets loaning.")
-				odooclusterutils.SetOdooClusterStatusCondition(&instance.Status, *condition)
+				instance.SetStatusCondition(*condition)
 				return reconcile.Result{}, err
 			}
 		}
@@ -92,10 +93,10 @@ func (comp *appSecretComponent) Reconcile(ctx *components.ComponentContext) (rec
 		if err != nil {
 			if errors.IsNotFound(err) {
 				// Setting the error condition
-				condition := odooclusterutils.NewOdooClusterStatusCondition(
+				condition := instance.NewStatusCondition(
 					clusterv1beta1.OdooClusterStatusConditionTypeErrored, corev1.ConditionFalse, "SecretLoaningNotFound",
 					"The app secret was not found in the operator namespace for loaning.")
-				odooclusterutils.SetOdooClusterStatusCondition(&instance.Status, *condition)
+				instance.SetStatusCondition(*condition)
 			}
 			return reconcile.Result{Requeue: true}, err
 		}
@@ -111,18 +112,18 @@ func (comp *appSecretComponent) Reconcile(ctx *components.ComponentContext) (rec
 			_, ok := upstream.Data["adminpasswd"]
 			if !ok {
 				// Setting the error condition
-				condition := odooclusterutils.NewOdooClusterStatusCondition(
+				condition := instance.NewStatusCondition(
 					clusterv1beta1.OdooClusterStatusConditionTypeErrored, corev1.ConditionFalse, "SecretLoaningAdminPasswdNotFound",
 					"The app secret did not contain the expected `adminpasswd` key for loaning.")
-				odooclusterutils.SetOdooClusterStatusCondition(&instance.Status, *condition)
+				instance.SetStatusCondition(*condition)
 				return fmt.Errorf("app secret loaning failed: expected key not found")
 			}
 			existing.Data["adminpasswd"] = upstream.Data["adminpasswd"]
 			// Setting the AppSecretLoaned condition
-			condition := odooclusterutils.NewOdooClusterStatusCondition(
+			condition := instance.NewStatusCondition(
 				clusterv1beta1.OdooClusterStatusConditionTypeAppSecretLoaned, corev1.ConditionTrue, "LoaningSuccess",
 				"The app secret has been loaned from the operator namespace.")
-			odooclusterutils.SetOdooClusterStatusCondition(&instance.Status, *condition)
+			instance.SetStatusCondition(*condition)
 		}
 		existing.Type = goal.Type
 		return nil

@@ -35,26 +35,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Gross workaround for limitations the Kubernetes code generator and interface{}.
-// If you want to see the weird inner workings of the hack, looking marshall.go.
-type ConfigValue struct {
-	Bool    *bool                  `json:"bool,omitempty"`
-	Int     *int                   `json:"int,omitempty"`
-	Float   *float64               `json:"float,omitempty"`
-	String  *string                `json:"string,omitempty"`
-	Section map[string]ConfigValue `json:"section,omitempty"`
-}
-
-// OdooImageSpec defines an Image and (optionally) it's registry credentials
-type OdooImageSpec struct {
-	Repository string            `json:"repository"`
-	Image      string            `json:"image"`
-	Trackname  OdooTracknameType `json:"track"`
-	Version    string            `json:"version"`
-	// +optional
-	Secret string `json:"secret,omitempty"`
-}
-
 type StatusCondition struct {
 	// Status of the condition, one of True, False, Unknown.
 	Status corev1.ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`

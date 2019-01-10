@@ -46,7 +46,6 @@ import (
 
 	// clusterv1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/cluster/v1beta1"
 	instancev1beta1 "github.com/xoe-labs/odoo-operator/pkg/apis/instance/v1beta1"
-	odooinstanceutils "github.com/xoe-labs/odoo-operator/pkg/controller/odooinstance/utils"
 )
 
 type copierComponent struct {
@@ -57,6 +56,8 @@ func NewCopier(templatePath string) *copierComponent {
 	return &copierComponent{templatePath: templatePath}
 }
 
+// +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=jobs/status,verbs=get;update;patch
 func (_ *copierComponent) WatchTypes() []runtime.Object {
 	return []runtime.Object{
 		&batchv1.Job{},
@@ -69,7 +70,7 @@ func (_ *copierComponent) IsReconcilable(ctx *components.ComponentContext) bool 
 		// The initializer component is the one that should initialize a root instance
 		return false
 	}
-	if odooinstanceutils.GetOdooInstanceStatusCondition(instance.Status, instancev1beta1.OdooInstanceStatusConditionTypeCreated) != nil {
+	if instance.GetStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated) != nil {
 		// The instance is already created (or creating)
 		return false
 	}
@@ -103,10 +104,9 @@ func (comp *copierComponent) Reconcile(ctx *components.ComponentContext) (reconc
 		glog.Infof("[%s/%s] copier: Creating copier Job %s/%s\n", instance.Namespace, instance.Name, job.Namespace, job.Name)
 
 		// Setting the creating condition
-		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
-			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "CopyJobCreation",
+		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionFalse, "CopyJobCreation",
 			"A copier Job has been launched to copy and initialize this database instance.")
-		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
+		instance.SetStatusCondition(*condition)
 
 		// Launching the job
 		err = controllerutil.SetControllerReference(instance, job, ctx.Scheme)
@@ -131,10 +131,9 @@ func (comp *copierComponent) Reconcile(ctx *components.ComponentContext) (reconc
 		// Success! Update the corresponding OdooInstanceStatusCondition and delete the job.
 
 		glog.Infof("[%s/%s] copier: Copier Job succeeded, setting OdooInstanceStatusCondition \"Created\" to 'true'\n", instance.Namespace, instance.Name)
-		condition := odooinstanceutils.NewOdooInstanceStatusCondition(
-			instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionTrue, "CopyJobSuccess",
+		condition := instance.NewStatusCondition(instancev1beta1.OdooInstanceStatusConditionTypeCreated, corev1.ConditionTrue, "CopyJobSuccess",
 			"The database instance has been sucessfully created by a copier Job.")
-		odooinstanceutils.SetOdooInstanceStatusCondition(&instance.Status, *condition)
+		instance.SetStatusCondition(*condition)
 
 		glog.V(2).Infof("[%s/%s] copier: Deleting copier Job %s/%s\n", instance.Namespace, instance.Name, existing.Namespace, existing.Name)
 		err = ctx.Delete(ctx.Context, existing, client.PropagationPolicy(metav1.DeletePropagationBackground))

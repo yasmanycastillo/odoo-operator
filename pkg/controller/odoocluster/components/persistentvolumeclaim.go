@@ -49,6 +49,8 @@ func NewPersistentVolumeClaim(templatePath string) *persistentVolumeClaimCompone
 	return &persistentVolumeClaimComponent{templatePath: templatePath}
 }
 
+// +kubebuilder:rbac:groups=,resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=,resources=persistentvolumeclaims/status,verbs=get;update;patch
 func (_ *persistentVolumeClaimComponent) WatchTypes() []runtime.Object {
 	return []runtime.Object{
 		&corev1.PersistentVolumeClaim{},
