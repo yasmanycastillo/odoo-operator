@@ -1,4 +1,3 @@
-{{ define "componentName" }}data{{ end }}
-{{ define "componentType" }}storage{{ end }}
-
-{{ template "pvc" . }}
+{{- define "componentName" }}data{{ end }}
+{{- define "componentType" }}storage{{ end }}
+{{- template "pvc" . -}}

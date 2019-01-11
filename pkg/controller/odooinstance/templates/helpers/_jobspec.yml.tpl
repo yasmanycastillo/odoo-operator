@@ -1,11 +1,11 @@
-{{ define "jobspec" }}
+{{- define "jobspec" }}
 spec:
   completions: 1
   backoffLimit: 1
   activeDeadlineSeconds: 360
   template:
     metadata:
-{{ template "metadatalabels" . | indent 6}}
+{{- template "metadatalabels" . | indent 6 -}}
     spec:
       restartPolicy: Never
       imagePullSecrets:
@@ -21,7 +21,8 @@ spec:
       - name: default
         image: {{ .Extra.Image }}:devops-{{ .Instance.Spec.Version }}
         imagePullPolicy: Always
-        args: {{ block "jobArgs" . }}{{ end }}
+        args:
+        {{ block "jobArgs" . }}{{ end }}
         resources:
           requests:
             memory: 512M
@@ -62,4 +63,4 @@ spec:
         - name: app-secrets
           secret:
             secretName: {{ .Extra.ClusterName }}-{{ .Instance.Version }}-secret
-{{ end }}
+{{ end -}}

@@ -1,7 +1,7 @@
-{{ define "deployment" }}
+{{- define "deployment" }}
 apiVersion: apps/v1
 kind: Deployment
-{{ template "metadata" . }}
+{{- template "metadata" . -}}
 spec:
   replicas: {{ block "deploymentReplicas" . }}1{{ end }}
   strategy:
@@ -30,14 +30,15 @@ spec:
         runAsUser: 9001
         runAsGroup: 9001
         runAsNonRoot: true
-        supplementalGroups: 2000
+        supplementalGroups: [2000]
       containers:
       - name: default
         image: {{ .Extra.Image }}:base-{{ .Instance.Spec.Version }}
         imagePullPolicy: Always
-        args: {{ block "deploymentArgs" . }}{{ end }}
+        args:
+        {{ block "deploymentArgs" . }}{{ end }}
         ports: {{ block "deploymentPorts" . }}[]{{ end }}
-{{ block "deploymentHealchecks" | indent 8 }}{{ end }}
+        {{ block "deploymentHealchecks" . }}{{ end }}
         resources:
           requests:
             memory: 512M
@@ -67,7 +68,6 @@ spec:
         - name: app-secrets
           mountPath: /run/secrets/odoo/
           readonly: true
-
       volumes:
         - name: data-volume
           volumeSource:
@@ -81,6 +81,6 @@ spec:
             defaultMode: 272
         - name: app-secrets
           secret:
-            secretName: summon.{{ .Instance.Name }}.app-secrets
+            secretName: {{ .Instance.Name }}.app-secrets
             defaultMode: 256
-{{ end }}
+{{ end -}}

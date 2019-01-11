@@ -1,5 +1,9 @@
-{{ define "componentName" }}longpolling{{ end }}
-{{ define "componentType" }}app{{ end }}
-
-{{ define "servicePorts" }}[{name: longpolling-port, protocol: TCP, port: 8069, targetPort: longpolling-port}]{{ end }}
-{{ template "service" . }}
+{{- define "componentName" }}longpolling{{ end }}
+{{- define "componentType" }}app{{ end }}
+{{- define "servicePorts" -}}
+  - name: longpolling
+    protocol: TCP
+    port: 80
+    targetPort: 8072
+{{- end -}}
+{{- template "service" . -}}

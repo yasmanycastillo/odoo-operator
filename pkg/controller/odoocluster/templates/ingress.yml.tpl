@@ -1,9 +1,8 @@
-{{ define "componentName" }}lb-l7router{{ end }}
-{{ define "componentType" }}networking{{ end }}
-
+{{- define "componentName" }}l7router{{ end }}
+{{- define "componentType" }}networking{{ end }}
 apiVersion: extensions/v1beta1
 kind: Ingress
-{{ template "metadata" . }}
+{{- template "metadata" . -}}
   annotations:
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"  # Still support kube-lego in addition to certmanager
@@ -14,5 +13,5 @@ spec:
     servicePort: 80
   rules:
 {{ range $instance := .Extra.InstanceList.Items }}
-{{ template "ingressrule" $instance }}
+{{- template "ingressrule" $instance -}}
 {{ end }}

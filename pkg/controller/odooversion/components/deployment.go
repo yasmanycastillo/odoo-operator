@@ -35,7 +35,6 @@ import (
 
 	"github.com/blaggacao/ridecell-operator/pkg/components"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -68,10 +67,10 @@ func (comp *deploymentComponent) Reconcile(ctx *components.ComponentContext) (re
 	extra["ConfigFile"] = "ok"
 
 	res, op, err := ctx.CreateOrUpdate(comp.templatePath, extra, func(goalObj, existingObj runtime.Object) error {
-		goal := goalObj.(*corev1.ConfigMap)
-		existing := existingObj.(*corev1.ConfigMap)
+		goal := goalObj.(*appsv1.Deployment)
+		existing := existingObj.(*appsv1.Deployment)
 		// Copy the configuration Data over.
-		existing.Data = goal.Data
+		existing.Spec = goal.Spec
 		return nil
 	})
 

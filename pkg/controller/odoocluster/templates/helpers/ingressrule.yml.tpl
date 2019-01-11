@@ -1,4 +1,4 @@
-{{ define "ingressrule" }}
+{{- define "ingressrule" }}
   - host: {{ .Spec.Hostname }}
     http:
       paths:
@@ -10,4 +10,4 @@
         backend:
           serviceName: {{ .Spec.Hostname }}-web
           servicePort: 8069
-{{ end }}
+{{ end -}}

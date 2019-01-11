@@ -1,4 +1,4 @@
-{{ define "metadata" }}
+{{- define "metadata" }}
 metadata:
   name: {{ .Instance.Name }}.{{ block "componentType" . }}{{ end }}.{{ block "componentName" . }}{{ end }}
   namespace: {{ .Instance.Namespace }}
@@ -7,6 +7,6 @@ metadata:
     app.kubernetes.io/instance: {{ .Instance.Name }}-{{ block "componentName" . }}{{ end }}
     app.kubernetes.io/component: {{ block "componentType" . }}{{ end }}
     app.kubernetes.io/managed-by: odoo-operator
-    app.kubernetes.io/part-of: {{ .Instance.Name }}
+    app.kubernetes.io/part-of: {{ .Instance.Name | quote }}
     app.kubernetes.io/version: NA
-{{ end }}
+{{ end -}}

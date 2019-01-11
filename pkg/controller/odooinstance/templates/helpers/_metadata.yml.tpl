@@ -1,6 +1,6 @@
-{{ define "metadata" }}
+{{- define "metadata"}}
 metadata:
   name: {{ .Instance.Name }}.{{ block "componentType" . }}{{ end }}.{{ block "componentName" . }}{{ end }}
   namespace: {{ .Instance.Namespace }}
-{{ template "metadatalabels" . | 2 }}
-{{ end }}
+{{- template "metadatalabels" . | indent 2 -}}
+{{ end -}}

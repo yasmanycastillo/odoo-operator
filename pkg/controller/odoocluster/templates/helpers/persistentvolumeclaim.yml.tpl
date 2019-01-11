@@ -1,6 +1,6 @@
-{{ define "pvc" }}
+{{- define "pvc" }}
 apiVersion: v1
 kind: PersistentVolumeClaim
-{{ template "metadata" . }}
+{{- template "metadata" . -}}
 spec: {{ .Extra.VolumeSpec }}
-{{ end }}
+{{ end -}}
