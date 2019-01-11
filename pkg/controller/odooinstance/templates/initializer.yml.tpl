@@ -11,4 +11,7 @@
         - {{ .Instance.Spec.InitModules | join "," }}
 	{{- end -}}
 {{- end -}}
-{{- template "job" . -}}
+apiVersion: batch/v1
+kind: Job
+{{- template "metadata" . -}}
+{{- template "jobspec" . -}}

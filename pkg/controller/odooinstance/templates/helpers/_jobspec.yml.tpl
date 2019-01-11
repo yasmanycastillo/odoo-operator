@@ -1,3 +1,4 @@
+
 {{- define "jobspec" }}
 spec:
   completions: 1
@@ -5,7 +6,15 @@ spec:
   activeDeadlineSeconds: 360
   template:
     metadata:
-{{- template "metadatalabels" . | indent 6 -}}
+      labels:
+        cluster.odoo.io/name: {{ .Instance.Spec.Cluster | quote }}
+        cluster.odoo.io/track: {{ .Extra.Track | quote }}
+        app.kubernetes.io/name: {{ block "componentName" . }}{{ end }}
+        app.kubernetes.io/instance: {{ .Instance.Name }}-{{ block "componentName" . }}{{ end }}
+        app.kubernetes.io/component: {{ block "componentType" . }}{{ end }}
+        app.kubernetes.io/managed-by: odoo-operator
+        app.kubernetes.io/part-of: {{ .Instance.Name | quote }}
+        app.kubernetes.io/version: {{ .Instance.Spec.Version | quote }}
     spec:
       restartPolicy: Never
       imagePullSecrets:
@@ -16,7 +25,7 @@ spec:
         runAsUser: 9001
         runAsGroup: 9001
         runAsNonRoot: true
-        supplementalGroups: 2000
+        supplementalGroups: [2000]
       containers:
       - name: default
         image: {{ .Extra.Image }}:devops-{{ .Instance.Spec.Version }}
@@ -62,5 +71,5 @@ spec:
             name: {{ .Instance.Name }}-config
         - name: app-secrets
           secret:
-            secretName: {{ .Extra.ClusterName }}-{{ .Instance.Version }}-secret
+            secretName: {{ .Extra.ClusterName }}-{{ .Instance.Spec.Version }}-secret
 {{ end -}}

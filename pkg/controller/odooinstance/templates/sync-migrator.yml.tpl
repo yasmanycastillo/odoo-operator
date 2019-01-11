@@ -9,4 +9,7 @@
         - --file
         - /opt/odoo/.migration.yml
 {{- end -}}
-{{- template "job" . -}}
+apiVersion: batch/v1
+kind: Job
+{{- template "metadata" . -}}
+{{- template "jobspec" . -}}
