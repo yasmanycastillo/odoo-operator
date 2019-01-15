@@ -1,25 +1,25 @@
 apiVersion: instance.odoo.io/v1beta1
 kind: OdooInstance
 metadata:
-  name: odooinstance-honolulu-sample
+  name: honolulu.example.com
 spec:
-  cluster: "odoo-operator-odoocluster-sample"
+  cluster: "joe-cl"
 ---
 apiVersion: instance.odoo.io/v1beta1
 kind: OdooInstance
 metadata:
-  name: odooinstance-testing-honolulu-sample
+  name: testing.honolulu.example.com
 spec:
-  cluster: "odoo-operator-odoocluster-sample"
+  cluster: "joe-cl"
   initModules:
     - crm
 ---
 apiVersion: instance.odoo.io/v1beta1
 kind: OdooInstance
 metadata:
-  name: odooinstance-testmigration-honolulu-sample
+  name: testmigration.honolulu.example.com
 spec:
-  cluster: "odoo-operator-odoocluster-sample"
+  cluster: "joe-cl"
   initModules:
     - account_accountant
     - crm

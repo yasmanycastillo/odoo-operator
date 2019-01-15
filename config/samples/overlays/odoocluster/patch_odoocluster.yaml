@@ -1,7 +1,7 @@
 apiVersion: cluster.odoo.io/v1beta1
 kind: OdooCluster
 metadata:
-  name: odoocluster-sample
+  name: cl
 spec:
   # appsecret: app-secret-name
   image:

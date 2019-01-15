@@ -3,9 +3,9 @@ kind: OdooInstance
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: odooinstance-honolulu-sample
+  name: honolulu.example.com
 spec:
-  cluster: "odoocluster-sample"
+  cluster: "cl"
   hostname: honolulu.example.com
   version: "0.0.1"
   initModules:
@@ -20,9 +20,9 @@ kind: OdooInstance
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: odooinstance-testing-honolulu-sample
+  name: testing.honolulu.example.com
 spec:
-  cluster: "odoocluster-sample"
+  cluster: "cl"
   # The parentHostname field triggers a copying instead of a new creation
   # In case of migration/copying -> init* adopt additional* semantics
   # Migrations are triggered on version bumps
@@ -39,9 +39,9 @@ kind: OdooInstance
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: odooinstance-testmigration-honolulu-sample
+  name: testmigration.honolulu.example.com
 spec:
-  cluster: "odoocluster-sample"
+  cluster: "cl"
   parentHostname: honolulu.example.com   # will be copied ...
   hostname: testmigration.honolulu.example.com
   version: "0.1.0"  # ... and migrated

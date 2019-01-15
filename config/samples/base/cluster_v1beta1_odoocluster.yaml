@@ -3,7 +3,7 @@ kind: OdooCluster
 metadata:
   labels:
     controller-tools.k8s.io: "1.0"
-  name: odoocluster-sample
+  name: cl
 spec:
   appsecret: app-secret-name
 
