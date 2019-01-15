@@ -10,6 +10,60 @@
   version = "v0.30.0"
 
 [[projects]]
+  digest = "1:55388fd080150b9a072912f97b1f5891eb0b50df43401f8b75fb4273d3fec9fc"
+  name = "github.com/Masterminds/semver"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "c7af12943936e8c39859482e61f0574c2fd7fc75"
+  version = "v1.4.2"
+
+[[projects]]
+  digest = "1:855fd08764898bb4199216f9745673f7a78539ed727c7853d7e147a94cee6680"
+  name = "github.com/Masterminds/sprig"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "544a9b1d90f323f6509491b389714fbbd126bee3"
+  version = "v2.17.1"
+
+[[projects]]
+  branch = "db-skeleton"
+  digest = "1:295d6eb1026f0af15b032cb77b1372ccac5f49b530451504325b65e35023283b"
+  name = "github.com/Ridecell/ridecell-operator"
+  packages = [
+    "pkg/apis",
+    "pkg/apis/db/v1beta1",
+    "pkg/apis/secrets/v1beta1",
+    "pkg/apis/summon/v1beta1",
+    "pkg/components",
+    "pkg/components/postgres",
+    "pkg/controller",
+    "pkg/controller/djangouser",
+    "pkg/controller/djangouser/components",
+    "pkg/controller/postgresextension",
+    "pkg/controller/postgresextension/components",
+    "pkg/controller/rabbitmq_vhost",
+    "pkg/controller/rabbitmq_vhost/components",
+    "pkg/controller/secrets",
+    "pkg/controller/secrets/components",
+    "pkg/controller/summon",
+    "pkg/controller/summon/components",
+    "pkg/dbpool",
+    "pkg/templates",
+    "pkg/test_helpers",
+    "pkg/test_helpers/fake_sql",
+  ]
+  pruneopts = "T"
+  revision = "9c56b653939d478b4eb5d503ecc35d3d9319fb20"
+
+[[projects]]
+  digest = "1:3b10c6fd33854dc41de2cf78b7bae105da94c2789b6fa5b9ac9e593ea43484ac"
+  name = "github.com/aokoli/goutils"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "41ac8693c5c10a92ea1ff5ac3a7f95646f6123b0"
+  version = "v1.1.0"
+
+[[projects]]
   digest = "1:9f42202ac457c462ad8bb9642806d275af9ab4850cf0b1960b9c6f083d4a309a"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -172,6 +226,14 @@
   pruneopts = "T"
   revision = "a30252cb686a21eb2d0b98132633053ec2f7f1e5"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:f9a5e090336881be43cfc1cf468330c1bdd60abdc9dd194e0b1ab69f4b94dd7c"
+  name = "github.com/huandu/xstrings"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "f02667b379e2fb5916c3cda2cf31e0eb885d79f8"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:3477d9dd8c135faab978bac762eaeafb31f28d6da97ef500d5c271966f74140a"
@@ -445,6 +507,8 @@
   packages = [
     "bcrypt",
     "blowfish",
+    "pbkdf2",
+    "scrypt",
     "ssh/terminal",
   ]
   pruneopts = "T"
@@ -893,6 +957,26 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/Masterminds/sprig",
+    "github.com/Ridecell/ridecell-operator/pkg/apis",
+    "github.com/Ridecell/ridecell-operator/pkg/apis/db/v1beta1",
+    "github.com/Ridecell/ridecell-operator/pkg/apis/secrets/v1beta1",
+    "github.com/Ridecell/ridecell-operator/pkg/apis/summon/v1beta1",
+    "github.com/Ridecell/ridecell-operator/pkg/components",
+    "github.com/Ridecell/ridecell-operator/pkg/components/postgres",
+    "github.com/Ridecell/ridecell-operator/pkg/controller",
+    "github.com/Ridecell/ridecell-operator/pkg/controller/djangouser",
+    "github.com/Ridecell/ridecell-operator/pkg/controller/djangouser/components",
+    "github.com/Ridecell/ridecell-operator/pkg/controller/postgresextension",
+    "github.com/Ridecell/ridecell-operator/pkg/controller/postgresextension/components",
+    "github.com/Ridecell/ridecell-operator/pkg/controller/secrets",
+    "github.com/Ridecell/ridecell-operator/pkg/controller/secrets/components",
+    "github.com/Ridecell/ridecell-operator/pkg/controller/summon",
+    "github.com/Ridecell/ridecell-operator/pkg/controller/summon/components",
+    "github.com/Ridecell/ridecell-operator/pkg/dbpool",
+    "github.com/Ridecell/ridecell-operator/pkg/templates",
+    "github.com/Ridecell/ridecell-operator/pkg/test_helpers",
+    "github.com/Ridecell/ridecell-operator/pkg/test_helpers/fake_sql",
     "github.com/emicklei/go-restful",
     "github.com/golang/glog",
     "github.com/lib/pq",
@@ -913,6 +997,7 @@
     "k8s.io/api/extensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apimachinery/pkg/api/errors",
+    "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
     "k8s.io/apimachinery/pkg/runtime",
@@ -930,6 +1015,7 @@
     "sigs.k8s.io/controller-runtime/pkg/envtest",
     "sigs.k8s.io/controller-runtime/pkg/handler",
     "sigs.k8s.io/controller-runtime/pkg/manager",
+    "sigs.k8s.io/controller-runtime/pkg/predicate",
     "sigs.k8s.io/controller-runtime/pkg/reconcile",
     "sigs.k8s.io/controller-runtime/pkg/runtime/inject",
     "sigs.k8s.io/controller-runtime/pkg/runtime/scheme",

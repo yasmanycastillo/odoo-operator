@@ -54,6 +54,7 @@ Google API                                   | Status       | Package
 [Asset][cloud-asset]                         | alpha        | [`godoc.org/cloud.google.com/go/asset/v1beta`][cloud-asset-ref]
 [BigQuery][cloud-bigquery]                   | stable       | [`godoc.org/cloud.google.com/go/bigquery`][cloud-bigquery-ref]
 [Bigtable][cloud-bigtable]                   | stable       | [`godoc.org/cloud.google.com/go/bigtable`][cloud-bigtable-ref]
+[Cloudtasks][cloud-tasks]                    | beta         | [`godoc.org/cloud.google.com/go/cloudtasks/apiv2beta3`][cloud-tasks-ref]
 [Container][cloud-container]                 | stable       | [`godoc.org/cloud.google.com/go/container/apiv1`][cloud-container-ref]
 [ContainerAnalysis][cloud-containeranalysis] | beta         | [`godoc.org/cloud.google.com/go/containeranalysis/apiv1beta1`][cloud-containeranalysis-ref]
 [Dataproc][cloud-dataproc]                   | stable       | [`godoc.org/cloud.google.com/go/dataproc/apiv1`][cloud-dataproc-ref]
@@ -101,9 +102,7 @@ for updates on these packages.
 ## Go Versions Supported
 
 We support the two most recent major versions of Go. If Google App Engine uses
-an older version, we support that as well. You can see which versions are
-currently supported by looking at the lines following `go:` in
-[`.travis.yml`](.travis.yml).
+an older version, we support that as well.
 
 ## Authorization
 
@@ -501,3 +500,6 @@ for more information.
 [cloud-asset]: https://cloud.google.com/security-command-center/docs/how-to-asset-inventory
 [cloud-asset-docs]: https://cloud.google.com/security-command-center/docs/how-to-asset-inventory
 [cloud-asset-ref]: https://godoc.org/cloud.google.com/go/asset/apiv1
+
+[cloud-tasks]: https://cloud.google.com/tasks/
+[cloud-tasks-ref]: https://godoc.org/cloud.google.com/go/cloudtasks/apiv2beta3

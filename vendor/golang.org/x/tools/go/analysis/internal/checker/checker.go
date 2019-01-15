@@ -7,12 +7,10 @@ package checker
 import (
 	"bytes"
 	"encoding/gob"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"go/token"
 	"go/types"
-	"io/ioutil"
 	"log"
 	"os"
 	"reflect"
@@ -25,12 +23,11 @@ import (
 	"time"
 
 	"golang.org/x/tools/go/analysis"
+	"golang.org/x/tools/go/analysis/internal/analysisflags"
 	"golang.org/x/tools/go/packages"
 )
 
 var (
-	JSON = false
-
 	// Debug is a set of single-letter flags:
 	//
 	//	f	show [f]acts as they are created
@@ -41,17 +38,16 @@ var (
 	//
 	Debug = ""
 
-	Context = -1 // if >=0, display offending line plus this many lines of context
-
 	// Log files for optional performance tracing.
 	CPUProfile, MemProfile, Trace string
 )
 
 // RegisterFlags registers command-line flags used the analysis driver.
 func RegisterFlags() {
-	flag.BoolVar(&JSON, "json", JSON, "emit JSON output")
-	flag.StringVar(&Debug, "debug", Debug, `debug flags, any subset of "lpsv"`)
-	flag.IntVar(&Context, "c", Context, `display offending line with this many lines of context`)
+	// When adding flags here, remember to update
+	// the list of suppressed flags in analysisflags.
+
+	flag.StringVar(&Debug, "debug", Debug, `debug flags, any subset of "fpstv"`)
 
 	flag.StringVar(&CPUProfile, "cpuprofile", "", "write CPU profile to this file")
 	flag.StringVar(&MemProfile, "memprofile", "", "write memory profile to this file")
@@ -63,7 +59,8 @@ func RegisterFlags() {
 // Analysis flags must already have been set.
 // It provides most of the logic for the main functions of both the
 // singlechecker and the multi-analysis commands.
-func Run(args []string, analyzers []*analysis.Analyzer) error {
+// It returns the appropriate exit code.
+func Run(args []string, analyzers []*analysis.Analyzer) (exitcode int) {
 	if CPUProfile != "" {
 		f, err := os.Create(CPUProfile)
 		if err != nil {
@@ -118,15 +115,14 @@ func Run(args []string, analyzers []*analysis.Analyzer) error {
 	allSyntax := needFacts(analyzers)
 	initial, err := load(args, allSyntax)
 	if err != nil {
-		return err
+		log.Print(err)
+		return 1 // load errors
 	}
 
+	// Print the results.
 	roots := analyze(initial, analyzers)
 
-	// Print the results.
-	printDiagnostics(roots)
-
-	return nil
+	return printDiagnostics(roots)
 }
 
 // load loads the initial packages.
@@ -145,34 +141,47 @@ func load(patterns []string, allSyntax bool) ([]*packages.Package, error) {
 			err = fmt.Errorf("%d errors during loading", n)
 		} else if n == 1 {
 			err = fmt.Errorf("error during loading")
+		} else if len(initial) == 0 {
+			err = fmt.Errorf("%s matched no packages", strings.Join(patterns, " "))
 		}
 	}
+
 	return initial, err
 }
 
-// Analyze applies an analysis to a package (and their dependencies if
-// necessary) and returns the graph of results.
+// TestAnalyzer applies an analysis to a set of packages (and their
+// dependencies if necessary) and returns the results.
 //
 // Facts about pkg are returned in a map keyed by object; package facts
 // have a nil key.
 //
-// It is exposed for use in testing.
-func Analyze(pkg *packages.Package, a *analysis.Analyzer) (*analysis.Pass, []analysis.Diagnostic, map[types.Object][]analysis.Fact, error) {
-	act := analyze([]*packages.Package{pkg}, []*analysis.Analyzer{a})[0]
-
-	facts := make(map[types.Object][]analysis.Fact)
-	for key, fact := range act.objectFacts {
-		if key.obj.Pkg() == pkg.Types {
-			facts[key.obj] = append(facts[key.obj], fact)
+// This entry point is used only by analysistest.
+func TestAnalyzer(a *analysis.Analyzer, pkgs []*packages.Package) []*TestAnalyzerResult {
+	var results []*TestAnalyzerResult
+	for _, act := range analyze(pkgs, []*analysis.Analyzer{a}) {
+		facts := make(map[types.Object][]analysis.Fact)
+		for key, fact := range act.objectFacts {
+			if key.obj.Pkg() == act.pass.Pkg {
+				facts[key.obj] = append(facts[key.obj], fact)
+			}
 		}
-	}
-	for key, fact := range act.packageFacts {
-		if key.pkg == pkg.Types {
-			facts[nil] = append(facts[nil], fact)
+		for key, fact := range act.packageFacts {
+			if key.pkg == act.pass.Pkg {
+				facts[nil] = append(facts[nil], fact)
+			}
 		}
-	}
 
-	return act.pass, act.diagnostics, facts, act.err
+		results = append(results, &TestAnalyzerResult{act.pass, act.diagnostics, facts, act.result, act.err})
+	}
+	return results
+}
+
+type TestAnalyzerResult struct {
+	Pass        *analysis.Pass
+	Diagnostics []analysis.Diagnostic
+	Facts       map[types.Object][]analysis.Fact
+	Result      interface{}
+	Err         error
 }
 
 func analyze(pkgs []*packages.Package, analyzers []*analysis.Analyzer) []*action {
@@ -240,7 +249,12 @@ func analyze(pkgs []*packages.Package, analyzers []*analysis.Analyzer) []*action
 // printDiagnostics prints the diagnostics for the root packages in either
 // plain text or JSON format. JSON format also includes errors for any
 // dependencies.
-func printDiagnostics(roots []*action) {
+//
+// It returns the exitcode: in plain mode, 0 for success, 1 for analysis
+// errors, and 3 for diagnostics. We avoid 2 since the flag package uses
+// it. JSON mode always succeeds at printing errors and diagnostics in a
+// structured form to stdout.
+func printDiagnostics(roots []*action) (exitcode int) {
 	// Print the output.
 	//
 	// Print diagnostics only for root packages,
@@ -258,50 +272,18 @@ func printDiagnostics(roots []*action) {
 		}
 	}
 
-	if JSON {
-		tree := make(map[string]map[string]interface{}) // ID -> analysis -> result
-
+	if analysisflags.JSON {
+		// JSON output
+		tree := make(analysisflags.JSONTree)
 		print = func(act *action) {
-			m, existing := tree[act.pkg.ID]
-			if !existing {
-				m = make(map[string]interface{})
-				// Insert m into tree later iff non-empty.
+			var diags []analysis.Diagnostic
+			if act.isroot {
+				diags = act.diagnostics
 			}
-			if act.err != nil {
-				type jsonError struct {
-					Err string `json:"error"`
-				}
-				m[act.a.Name] = jsonError{act.err.Error()}
-			} else if act.isroot {
-				type jsonDiagnostic struct {
-					Category string `json:"category,omitempty"`
-					Posn     string `json:"posn"`
-					Message  string `json:"message"`
-				}
-				var diagnostics []jsonDiagnostic
-				for _, f := range act.diagnostics {
-					diagnostics = append(diagnostics, jsonDiagnostic{
-						Category: f.Category,
-						Posn:     act.pkg.Fset.Position(f.Pos).String(),
-						Message:  f.Message,
-					})
-				}
-				if diagnostics != nil {
-					m[act.a.Name] = diagnostics
-				}
-			}
-			if !existing && len(m) > 0 {
-				tree[act.pkg.ID] = m
-			}
+			tree.Add(act.pkg.Fset, act.pkg.ID, act.a.Name, diags, act.err)
 		}
 		visitAll(roots)
-
-		data, err := json.MarshalIndent(tree, "", "\t")
-		if err != nil {
-			log.Panicf("internal error: JSON marshalling failed: %v", err)
-		}
-		os.Stdout.Write(data)
-		fmt.Println()
+		tree.Print()
 	} else {
 		// plain text output
 
@@ -311,45 +293,37 @@ func printDiagnostics(roots []*action) {
 		type key struct {
 			token.Position
 			*analysis.Analyzer
-			message, class string
+			message string
 		}
 		seen := make(map[key]bool)
 
 		print = func(act *action) {
 			if act.err != nil {
 				fmt.Fprintf(os.Stderr, "%s: %v\n", act.a.Name, act.err)
+				exitcode = 1 // analysis failed, at least partially
 				return
 			}
 			if act.isroot {
-				for _, f := range act.diagnostics {
-					class := act.a.Name
-					if f.Category != "" {
-						class += "." + f.Category
-					}
-					posn := act.pkg.Fset.Position(f.Pos)
+				for _, diag := range act.diagnostics {
+					// We don't display a.Name/f.Category
+					// as most users don't care.
 
-					k := key{posn, act.a, class, f.Message}
+					posn := act.pkg.Fset.Position(diag.Pos)
+					k := key{posn, act.a, diag.Message}
 					if seen[k] {
 						continue // duplicate
 					}
 					seen[k] = true
 
-					fmt.Printf("%s: [%s] %s\n", posn, class, f.Message)
-
-					// -c=0: show offending line of code in context.
-					if Context >= 0 {
-						data, _ := ioutil.ReadFile(posn.Filename)
-						lines := strings.Split(string(data), "\n")
-						for i := posn.Line - Context; i <= posn.Line+Context; i++ {
-							if 1 <= i && i <= len(lines) {
-								fmt.Printf("%d\t%s\n", i, lines[i-1])
-							}
-						}
-					}
+					analysisflags.PrintPlain(act.pkg.Fset, diag)
 				}
 			}
 		}
 		visitAll(roots)
+
+		if exitcode == 0 && len(seen) > 0 {
+			exitcode = 3 // successfuly produced diagnostics
+		}
 	}
 
 	// Print timing info.
@@ -377,6 +351,8 @@ func printDiagnostics(roots []*action) {
 			}
 		}
 	}
+
+	return exitcode
 }
 
 // needFacts reports whether any analysis required by the specified set
@@ -680,7 +656,8 @@ func (act *action) exportObjectFact(obj types.Object, fact analysis.Fact) {
 	act.objectFacts[key] = fact // clobber any existing entry
 	if dbg('f') {
 		objstr := types.ObjectString(obj, (*types.Package).Name)
-		log.Printf("fact %#v on %s", fact, objstr)
+		fmt.Fprintf(os.Stderr, "%s: object %s has fact %s\n",
+			act.pkg.Fset.Position(obj.Pos()), objstr, fact)
 	}
 }
 
@@ -708,7 +685,8 @@ func (act *action) exportPackageFact(fact analysis.Fact) {
 	key := packageFactKey{act.pass.Pkg, factType(fact)}
 	act.packageFacts[key] = fact // clobber any existing entry
 	if dbg('f') {
-		log.Printf("fact %#v on %s", fact, act.pass.Pkg)
+		fmt.Fprintf(os.Stderr, "%s: package %s has fact %s\n",
+			act.pkg.Fset.Position(act.pass.Files[0].Pos()), act.pass.Pkg.Path(), fact)
 	}
 }
 

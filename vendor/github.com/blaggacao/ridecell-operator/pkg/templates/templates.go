@@ -50,6 +50,7 @@ func parseTemplate(fs http.FileSystem, filename string) (*template.Template, err
 
 		_, err = tmpl.Parse(string(fileBytes))
 		if err != nil {
+			glog.Errorf("failed parsing helper %#v\n", helperFilename)
 			return nil, err
 		}
 	}
@@ -90,17 +91,17 @@ func parseObject(rawObject string) (runtime.Object, error) {
 func Get(fs http.FileSystem, filename string, data interface{}) (runtime.Object, error) {
 	tmpl, err := parseTemplate(fs, filename)
 	if err != nil {
-		glog.Errorf("templates: parse template failed, filname: %#v\n", filename)
+		glog.Errorf("failed parsing %#v\n", filename)
 		return nil, err
 	}
 	out, err := renderTemplate(tmpl, data)
 	if err != nil {
-		glog.Errorf("templates: render failed, template: %#v, data: %#v\n", tmpl, data)
+		glog.Errorf("failed rendering %#v data: %#v\n", filename, data)
 		return nil, err
 	}
 	obj, err := parseObject(out)
 	if err != nil {
-		glog.Errorf("templates: pares object failed, out: %#v\n", out)
+		glog.Errorf("failed parsing %#v raw: %#v\n", filename, out)
 		return nil, err
 	}
 
