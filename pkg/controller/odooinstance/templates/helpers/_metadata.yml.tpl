@@ -1,9 +1,8 @@
-{{- define "metadatalabelsHERE"}}{{- template "metadatalabels" . -}}{{ end }}
 {{- define "metadata"}}
-metadata:
+metadata: &metadata
   name: {{ .Instance.Name }}.{{ block "componentType" . }}{{ end }}.{{ block "componentName" . }}{{ end }}
   namespace: {{ .Instance.Namespace }}
-  labels:
+  labels: &metadatalabels
     cluster.odoo.io/name: {{ .Instance.Spec.Cluster | quote }}
     cluster.odoo.io/track: {{ .Extra.Track | quote }}
     instance.odoo.io/hostname: {{ .Instance.Spec.Hostname | quote }}

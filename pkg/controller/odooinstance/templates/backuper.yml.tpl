@@ -7,12 +7,13 @@
         - --database
         - {{ .Instance.Spec.Hostname }}
 {{- end -}}
-apiVersion: v1beta1
+apiVersion: batch/v1beta1
 kind: CronJob
 {{- template "metadata" . -}}
+{{- template "jobspec" . -}}
 spec:
-  schedule:
+  schedule: "* * * 1 *"
   concurrencyPolicy: Forbid
   jobTemplate:
-{{- template "metadata" . | indent 4 -}}
-{{- template "jobspec" . | indent 4 -}}
+    matadata: *metadata
+    spec: *jobspec
