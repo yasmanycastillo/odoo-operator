@@ -80,7 +80,7 @@ func (comp *backuperComponent) Reconcile(ctx *components.ComponentContext) (reco
 	// Set up the extra data map for the template.
 	err := ctx.Get(ctx.Context, types.NamespacedName{Name: *instance.Spec.ParentHostname, Namespace: instance.Namespace}, parentinstance)
 	if err != nil && errors.IsNotFound(err) {
-		glog.Infof("[%s/%s] backuper: Did not find parent OdooInstance %s/%s\n", instance.Namespace, instance.Name, instance.Namespace, instance.Spec.ParentHostname)
+		glog.Infof("[%s/%s] backuper: Did not find parent OdooInstance %s/%s\n", instance.Namespace, instance.Name, instance.Namespace, *instance.Spec.ParentHostname)
 		return reconcile.Result{}, err
 	} else if err != nil {
 		return reconcile.Result{}, err

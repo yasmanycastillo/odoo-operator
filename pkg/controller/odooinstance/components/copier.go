@@ -31,6 +31,7 @@
 package components
 
 import (
+	e "errors"
 	"github.com/golang/glog"
 
 	"github.com/blaggacao/ridecell-operator/pkg/components"
@@ -78,18 +79,27 @@ func (_ *copierComponent) IsReconcilable(ctx *components.ComponentContext) bool 
 
 func (comp *copierComponent) Reconcile(ctx *components.ComponentContext) (reconcile.Result, error) {
 	instance := ctx.Top.(*instancev1beta1.OdooInstance)
-	parentinstance := &instancev1beta1.OdooInstance{}
+	parentinstances := &instancev1beta1.OdooInstanceList{}
 
 	// Set up the extra data map for the template.
-	err := ctx.Get(ctx.Context, types.NamespacedName{Name: *instance.Spec.ParentHostname, Namespace: instance.Namespace}, parentinstance)
-	if err != nil && errors.IsNotFound(err) {
-		glog.Infof("[%s/%s] copier: Did not find parent OdooInstance %s/%s\n", instance.Namespace, instance.Name, instance.Namespace, instance.Spec.ParentHostname)
-		return reconcile.Result{}, err
-	} else if err != nil {
+	listoptions := client.InNamespace(instance.Namespace)
+	listoptions.MatchingLabels(map[string]string{
+		"cluster.odoo.io/name":      instance.Labels["cluster.odoo.io/name"],
+		"instance.odoo.io/hostname": *instance.Spec.ParentHostname,
+	})
+	err := ctx.List(ctx.Context, listoptions, parentinstances)
+	if err != nil {
 		return reconcile.Result{}, err
 	}
+	if len(parentinstances.Items) > 1 {
+		return reconcile.Result{}, e.New("more than one parent instance found")
+	} else if len(parentinstances.Items) < 1 {
+		glog.Infof("[%s/%s] copier: Did not find parent OdooInstance with hostname %s\n", instance.Namespace, instance.Name, *instance.Spec.ParentHostname)
+		return reconcile.Result{Requeue: true}, e.New("No parent instance found")
+	}
+
 	extra := map[string]interface{}{}
-	extra["FromDatabase"] = string(parentinstance.Spec.Hostname)
+	extra["FromDatabase"] = string(parentinstances.Items[0].Spec.Hostname)
 
 	obj, err := ctx.GetTemplate(comp.templatePath, extra)
 	if err != nil {

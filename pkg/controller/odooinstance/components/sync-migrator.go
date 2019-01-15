@@ -76,9 +76,14 @@ func (_ *synchMigratorComponent) IsReconcilable(ctx *components.ComponentContext
 	}
 	// Get the parent instance ...
 	parentinstance := &instancev1beta1.OdooInstance{}
-	err := ctx.Get(ctx.Context, types.NamespacedName{Name: *instance.Spec.ParentHostname, Namespace: instance.Namespace}, parentinstance)
+	listoptions := client.InNamespace(instance.Namespace)
+	listoptions.MatchingField("hostname", *instance.Spec.ParentHostname)
+	listoptions.MatchingLabels(map[string]string{
+		"cluster.odoo.io/name": instance.Labels["cluster.odoo.io/name"],
+	})
+	err := ctx.List(ctx.Context, listoptions, parentinstance)
 	if err != nil && errors.IsNotFound(err) {
-		glog.Infof("[%s/%s] sync-migrator: Did not find parent OdooInstance %s/%s\n", instance.Namespace, instance.Name, instance.Namespace, instance.Spec.ParentHostname)
+		glog.Infof("[%s/%s] sync-migrator: Did not find parent OdooInstance %s/%s\n", instance.Namespace, instance.Name, instance.Namespace, *instance.Spec.ParentHostname)
 		return false
 	} else if err != nil {
 		return false

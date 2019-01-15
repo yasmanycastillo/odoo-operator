@@ -43,15 +43,16 @@ import (
 // +kubebuilder:rbac:groups=instance.odoo.io,resources=odooinstances/status,verbs=get;update;patch
 func Add(mgr manager.Manager) error {
 	_, err := components.NewReconciler("odoo-instance-controller", mgr, &instancev1beta1.OdooInstance{}, Templates, []components.Component{
-		// Set default values.
+		// Set default values and meta data.
 		odooinstancecomponents.NewDefaults(),
+		odooinstancecomponents.NewMeta(),
 
 		// Top-level components
 		odooinstancecomponents.NewInitializer("initializer.yml.tpl"),
 		odooinstancecomponents.NewCopier("copier.yml.tpl"),
 
 		// Secondary components
-		odooinstancecomponents.NewSyncMigrator("sync-migrator.yml.tpl"),
+		// odooinstancecomponents.NewSyncMigrator("sync-migrator.yml.tpl"),
 		// odooinstancecomponents.NewAsynchMigrator("asynch-migrator.yml.tpl"),
 
 		// Backup job components
